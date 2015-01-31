@@ -14,13 +14,13 @@ import (
 	"net/url"
 
 	//"github.com/aleasoluciones/simpleamqp"
-	"github.com/kr/pretty"
+	//"github.com/kr/pretty"
 )
 
 type QueryMessage struct {
-	id     int
-	topic  string
-	values map[string][]string
+	Id     int                 `json:"queryId"`
+	Topic  string              `json:"topic"`
+	Values map[string][]string `json:"values"`
 }
 
 type httpDispatcher struct {
@@ -32,19 +32,18 @@ func (d *httpDispatcher) dispatch() {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL)
-	pretty.Println(r)
 
 	topic := r.URL.Path[1:]
 	queryValues, _ := url.ParseQuery(r.URL.RawQuery)
 
 	queryMessage := QueryMessage{
-		topic:  topic,
-		values: queryValues,
+		Topic:  topic,
+		Values: queryValues,
 	}
 
 	jsonQuery, err := json.Marshal(queryMessage)
 
-	pretty.Println("EFA2", jsonQuery, err)
+	fmt.Println("EFA2", string(jsonQuery), err)
 
 	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
 
