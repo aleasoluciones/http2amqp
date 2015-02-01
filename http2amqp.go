@@ -17,20 +17,62 @@ import (
 	//"github.com/kr/pretty"
 )
 
+const (
+	MAX_INFLY = 1000
+)
+
 type QueryMessage struct {
 	Id     int                 `json:"queryId"`
 	Topic  string              `json:"topic"`
 	Values map[string][]string `json:"values"`
 }
 
+type InputQueryMessage struct {
+	queryMessage  QueryMessage
+	outputChannel chan ResponseMessage
+}
+
+type ResponseMessage struct {
+	id           int
+	jsonResponse string
+}
+
 type httpDispatcher struct {
+	input chan InputQueryMessage
 }
 
 func (d *httpDispatcher) dispatch() {
+	var outputChannels [MAX_INFLY]chan ResponseMessage
 
+	var responses chan ResponseMessage
+	responses = make(chan ResponseMessage, 10000)
+
+	id := 0
+	for {
+
+		select {
+		case inputMessage := <-d.input:
+			fmt.Println("Dispatch input", id, inputMessage.queryMessage, inputMessage.outputChannel)
+			outputChannels[id] = inputMessage.outputChannel
+
+			responses <- ResponseMessage{id, fmt.Sprintf("Response %s", inputMessage.queryMessage)}
+
+			break
+
+		case response := <-responses:
+			fmt.Println("Dispatch response", response)
+			outputChannels[response.id] <- response
+			close(outputChannels[response.id])
+		}
+
+		id = id + 1
+		if id == MAX_INFLY {
+			id = 0
+		}
+	}
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func handler(dispatcher *httpDispatcher, w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL)
 
 	topic := r.URL.Path[1:]
@@ -45,8 +87,16 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println("EFA2", string(jsonQuery), err)
 
-	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+	ouput := make(chan ResponseMessage)
+	fmt.Println("Waiting to put input message!")
+	dispatcher.input <- InputQueryMessage{queryMessage, ouput}
 
+	//fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+
+	fmt.Println("Waiting response!")
+	response := <-ouput
+	fmt.Println("Response", response)
+	fmt.Fprintf(w, "Hi there, I love %s!", response)
 }
 
 func main() {
@@ -64,7 +114,12 @@ func main() {
 
 	// amqpPublisher.Publish("efa2", []byte(messageBody))
 
-	http.HandleFunc("/", handler)
+	dispatcher := httpDispatcher{make(chan InputQueryMessage)}
+	go dispatcher.dispatch()
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		handler(&dispatcher, w, r)
+	})
 
 	addressAndPort := fmt.Sprintf("%s:%s", *address, *port)
 	log.Println("Server running in", addressAndPort, " ...")
