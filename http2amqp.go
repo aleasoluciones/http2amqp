@@ -2,23 +2,24 @@
 // source code is governed by a MIT-style license that can be found in the
 // LICENSE file.
 
-package main
+package http2amqp
 
 import (
-	"flag"
 	"fmt"
 	"log"
+	"time"
 
 	"encoding/json"
 	"net/http"
 	"net/url"
 
-	//"github.com/aleasoluciones/simpleamqp"
-	//"github.com/kr/pretty"
+	"github.com/aleasoluciones/simpleamqp"
 )
 
 const (
-	MAX_INFLY = 1000
+	MAX_INFLY         = 1000
+	QUERY_EXCHANGE    = "queries"
+	RESPONSE_EXCHANGE = "responses"
 )
 
 type QueryMessage struct {
@@ -37,15 +38,47 @@ type ResponseMessage struct {
 	jsonResponse string
 }
 
-type httpDispatcher struct {
-	input chan InputQueryMessage
+type HttpDispatcher struct {
+	input         chan InputQueryMessage
+	responses     chan ResponseMessage
+	amqpPublisher simpleamqp.AmqpPublisher
+	amqpConsumer  simpleamqp.AmqpConsumer
 }
 
-func (d *httpDispatcher) dispatch() {
-	var outputChannels [MAX_INFLY]chan ResponseMessage
+func NewHttpDispatcher(amqpuri string) *HttpDispatcher {
+	dispatcher := HttpDispatcher{
+		input:         make(chan InputQueryMessage),
+		responses:     make(chan ResponseMessage, 10000),
+		amqpPublisher: *simpleamqp.NewAmqpPublisher(amqpuri, QUERY_EXCHANGE),
+		amqpConsumer:  *simpleamqp.NewAmqpConsumer(amqpuri),
+	}
 
-	var responses chan ResponseMessage
-	responses = make(chan ResponseMessage, 10000)
+	return &dispatcher
+}
+
+func (dispatcher *HttpDispatcher) ListenAndServe(addressAndPort string) error {
+	go dispatcher.dispatch()
+	go dispatcher.receiveResponses()
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		dispatcher.httpHandle(w, r)
+	})
+
+	log.Println("Server running in", addressAndPort, " ...")
+	return http.ListenAndServe(addressAndPort, nil)
+}
+
+func (d *HttpDispatcher) receiveResponses() {
+	messages := d.amqpConsumer.Receive(RESPONSE_EXCHANGE, []string{"#"}, "responses_q", 30*time.Second)
+	for message := range messages {
+		log.Println("RECEIVE1", message)
+
+		// FIXME extract id
+		d.responses <- ResponseMessage{0, string(message.Body)}
+	}
+}
+
+func (d *HttpDispatcher) dispatch() {
+	var outputChannels [MAX_INFLY]chan ResponseMessage
 
 	id := 0
 	for {
@@ -54,12 +87,12 @@ func (d *httpDispatcher) dispatch() {
 		case inputMessage := <-d.input:
 			fmt.Println("Dispatch input", id, inputMessage.queryMessage, inputMessage.outputChannel)
 			outputChannels[id] = inputMessage.outputChannel
-
-			responses <- ResponseMessage{id, fmt.Sprintf("Response %s", inputMessage.queryMessage)}
-
+			inputMessage.queryMessage.Id = id
+			jsonQuery, _ := json.Marshal(inputMessage.queryMessage)
+			d.amqpPublisher.Publish(inputMessage.queryMessage.Topic, []byte(jsonQuery))
 			break
 
-		case response := <-responses:
+		case response := <-d.responses:
 			fmt.Println("Dispatch response", response)
 			outputChannels[response.id] <- response
 			close(outputChannels[response.id])
@@ -72,7 +105,7 @@ func (d *httpDispatcher) dispatch() {
 	}
 }
 
-func handler(dispatcher *httpDispatcher, w http.ResponseWriter, r *http.Request) {
+func (dispatcher *HttpDispatcher) httpHandle(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL)
 
 	topic := r.URL.Path[1:]
@@ -97,31 +130,4 @@ func handler(dispatcher *httpDispatcher, w http.ResponseWriter, r *http.Request)
 	response := <-ouput
 	fmt.Println("Response", response)
 	fmt.Fprintf(w, "Hi there, I love %s!", response)
-}
-
-func main() {
-	address := flag.String("address", "0.0.0.0", "listen address")
-	port := flag.String("port", "8080", "listen port")
-	//amqpuri := flag.String("amqpuri", "amqp://guest:guest@localhost/", "AMQP connection uri")
-	flag.Parse()
-
-	// amqpPublisher := simpleamqp.NewAmqpPublisher(amqpuri, "events")
-	// amqpConsumer := simpleamqp.NewAmqpConsumer(amqpuri)
-	// messages := amqpConsumer.Receive("events", []string{"efa1", "efa2"}, "efa", 30*time.Second)
-	// for message := range messages {
-	// 	log.Println(message)
-	// }
-
-	// amqpPublisher.Publish("efa2", []byte(messageBody))
-
-	dispatcher := httpDispatcher{make(chan InputQueryMessage)}
-	go dispatcher.dispatch()
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		handler(&dispatcher, w, r)
-	})
-
-	addressAndPort := fmt.Sprintf("%s:%s", *address, *port)
-	log.Println("Server running in", addressAndPort, " ...")
-	log.Fatal(http.ListenAndServe(addressAndPort, nil))
 }

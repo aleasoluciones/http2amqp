@@ -9,18 +9,23 @@ import (
 	"github.com/aleasoluciones/simpleamqp"
 )
 
+const (
+	QUERY_EXCHANGE    = "queries"
+	RESPONSE_EXCHANGE = "responses"
+)
+
 func main() {
 	name := flag.String("name", "service1", "Service name")
 	amqpuri := flag.String("amqpuri", "amqp://guest:guest@localhost/", "AMQP connection uri")
 	flag.Parse()
 
-	amqpPublisher := simpleamqp.NewAmqpPublisher(*amqpuri, "events")
+	amqpPublisher := simpleamqp.NewAmqpPublisher(*amqpuri, "responses")
 	amqpConsumer := simpleamqp.NewAmqpConsumer(*amqpuri)
-	messages := amqpConsumer.Receive("events", []string{"#"}, *name, 30*time.Second)
+	messages := amqpConsumer.Receive("queries", []string{"#"}, *name, 30*time.Second)
 
 	cont := 0
 	for message := range messages {
-		log.Println(message)
+		log.Println(message.Body)
 
 		messageBody := fmt.Sprintf("name <%s> cont %d", *name, cont)
 
