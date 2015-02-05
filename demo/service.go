@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/aleasoluciones/http2amqp"
 	"github.com/aleasoluciones/simpleamqp"
 )
 
@@ -21,15 +23,20 @@ func main() {
 
 	amqpPublisher := simpleamqp.NewAmqpPublisher(*amqpuri, "responses")
 	amqpConsumer := simpleamqp.NewAmqpConsumer(*amqpuri)
-	messages := amqpConsumer.Receive("queries", []string{"#"}, *name, 30*time.Second)
+	messages := amqpConsumer.Receive("queries", []string{"#"}, *name, 30*time.Minute)
 
 	cont := 0
 	for message := range messages {
 		log.Println(message.Body)
 
-		messageBody := fmt.Sprintf("name <%s> cont %d", *name, cont)
+		var m http2amqp.QueryMessage
+		err := json.Unmarshal([]byte(message.Body), &m)
+		if err == nil {
+			response := http2amqp.ResposeMessage{m.Id, fmt.Sprintf("name <%s> cont %d", *name, cont)}
 
-		amqpPublisher.Publish("efa2", []byte(messageBody))
+			json, _ := json.Marshal(response)
+			d.amqpPublisher.Publish(m.Topic, []byte(json))
+		}
 
 		cont += cont + 1
 	}

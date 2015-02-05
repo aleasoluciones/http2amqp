@@ -68,7 +68,7 @@ func (dispatcher *HttpDispatcher) ListenAndServe(addressAndPort string) error {
 }
 
 func (d *HttpDispatcher) receiveResponses() {
-	messages := d.amqpConsumer.Receive(RESPONSE_EXCHANGE, []string{"#"}, "responses_q", 30*time.Second)
+	messages := d.amqpConsumer.Receive(RESPONSE_EXCHANGE, []string{"#"}, "responses_q", 30*time.Minute)
 	for message := range messages {
 		log.Println("RECEIVE1", message)
 
