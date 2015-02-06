@@ -101,8 +101,9 @@ func (d *HttpDispatcher) dispatch() {
 
 		case response := <-d.responses:
 			log.Println("Dispatch response", response, response.Id)
-			outputChannels[response.Id] <- response
-			close(outputChannels[response.Id])
+			if outputChannels[response.Id] != nil {
+				outputChannels[response.Id] <- response
+			}
 			break
 		}
 
