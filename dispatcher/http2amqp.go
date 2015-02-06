@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/aleasoluciones/http2amqp"
 )
@@ -18,7 +19,7 @@ func main() {
 	amqpuri := flag.String("amqpuri", "amqp://guest:guest@localhost/", "AMQP connection uri")
 	flag.Parse()
 
-	httpDispatcher := http2amqp.NewHttpDispatcher(*amqpuri)
+	httpDispatcher := http2amqp.NewHttpDispatcher(*amqpuri, 1*time.Second)
 	addressAndPort := fmt.Sprintf("%s:%s", *address, *port)
 	log.Fatal(httpDispatcher.ListenAndServe(addressAndPort))
 }

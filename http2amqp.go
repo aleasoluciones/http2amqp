@@ -43,14 +43,16 @@ type HttpDispatcher struct {
 	responses     chan ResponseMessage
 	amqpPublisher simpleamqp.AmqpPublisher
 	amqpConsumer  simpleamqp.AmqpConsumer
+	timeout       time.Duration
 }
 
-func NewHttpDispatcher(amqpuri string) *HttpDispatcher {
+func NewHttpDispatcher(amqpuri string, timeout time.Duration) *HttpDispatcher {
 	dispatcher := HttpDispatcher{
 		input:         make(chan InputQueryMessage),
 		responses:     make(chan ResponseMessage, 10000),
 		amqpPublisher: *simpleamqp.NewAmqpPublisher(amqpuri, QUERY_EXCHANGE),
 		amqpConsumer:  *simpleamqp.NewAmqpConsumer(amqpuri),
+		timeout:       timeout,
 	}
 
 	return &dispatcher
@@ -102,7 +104,12 @@ func (d *HttpDispatcher) dispatch() {
 		case response := <-d.responses:
 			log.Println("Dispatch response", response, response.Id)
 			if outputChannels[response.Id] != nil {
-				outputChannels[response.Id] <- response
+				select {
+				case outputChannels[response.Id] <- response:
+					break
+				default:
+					log.Println("Response discarded (timeout)", response)
+				}
 			}
 			break
 		}
@@ -136,8 +143,21 @@ func (dispatcher *HttpDispatcher) httpHandle(w http.ResponseWriter, r *http.Requ
 	dispatcher.input <- InputQueryMessage{queryMessage, ouput}
 
 	log.Println("H4")
-	response := <-ouput
-	log.Println("H5 Response", response, response.Id)
 
-	fmt.Fprintf(w, "Hi there, I love")
+	timeoutTimer := time.NewTimer(dispatcher.timeout)
+	defer timeoutTimer.Stop()
+	afterTimeout := timeoutTimer.C
+
+	select {
+	case response := <-ouput:
+		log.Println("Wrinting response")
+		fmt.Fprintf(w, response.JsonResponse)
+		break
+	case <-afterTimeout:
+		log.Println("Wrinting timeout error")
+		http.Error(w, "Internal timeout Error!", 500)
+		log.Println("Error")
+		break
+	}
+
 }
