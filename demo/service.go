@@ -32,10 +32,10 @@ func main() {
 		var m http2amqp.QueryMessage
 		err := json.Unmarshal([]byte(message.Body), &m)
 		if err == nil {
-			response := http2amqp.ResposeMessage{m.Id, fmt.Sprintf("name <%s> cont %d", *name, cont)}
+			response := http2amqp.ResponseMessage{m.Id, fmt.Sprintf("name <%s> cont %d", *name, cont)}
 
 			json, _ := json.Marshal(response)
-			d.amqpPublisher.Publish(m.Topic, []byte(json))
+			amqpPublisher.Publish(m.Topic, []byte(json))
 		}
 
 		cont += cont + 1

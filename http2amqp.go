@@ -34,8 +34,8 @@ type InputQueryMessage struct {
 }
 
 type ResponseMessage struct {
-	id           int
-	jsonResponse string
+	Id           int
+	JsonResponse string
 }
 
 type HttpDispatcher struct {
@@ -72,8 +72,14 @@ func (d *HttpDispatcher) receiveResponses() {
 	for message := range messages {
 		log.Println("RECEIVE1", message)
 
-		// FIXME extract id
-		d.responses <- ResponseMessage{0, string(message.Body)}
+		var m ResponseMessage
+		err := json.Unmarshal([]byte(message.Body), &m)
+		if err != nil {
+			log.Println("R2 Error", err, message.Body)
+		} else {
+			// FIXME extract id
+			d.responses <- ResponseMessage{m.Id, string(message.Body)}
+		}
 	}
 }
 
@@ -82,21 +88,25 @@ func (d *HttpDispatcher) dispatch() {
 
 	id := 0
 	for {
-
+		log.Println("Antes select")
 		select {
 		case inputMessage := <-d.input:
-			fmt.Println("Dispatch input", id, inputMessage.queryMessage, inputMessage.outputChannel)
+			log.Println("D1 Dispatch input", id, inputMessage.queryMessage, inputMessage.outputChannel)
 			outputChannels[id] = inputMessage.outputChannel
 			inputMessage.queryMessage.Id = id
 			jsonQuery, _ := json.Marshal(inputMessage.queryMessage)
+			log.Println("D2 Dispatch input")
 			d.amqpPublisher.Publish(inputMessage.queryMessage.Topic, []byte(jsonQuery))
 			break
 
 		case response := <-d.responses:
-			fmt.Println("Dispatch response", response)
-			outputChannels[response.id] <- response
-			close(outputChannels[response.id])
+			log.Println("Dispatch response", response, response.Id)
+			outputChannels[response.Id] <- response
+			close(outputChannels[response.Id])
+			break
 		}
+
+		log.Println("Despues select")
 
 		id = id + 1
 		if id == MAX_INFLY {
@@ -106,7 +116,7 @@ func (d *HttpDispatcher) dispatch() {
 }
 
 func (dispatcher *HttpDispatcher) httpHandle(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
+	log.Println("H1", r.URL.Path[1:])
 
 	topic := r.URL.Path[1:]
 	queryValues, _ := url.ParseQuery(r.URL.RawQuery)
@@ -118,16 +128,15 @@ func (dispatcher *HttpDispatcher) httpHandle(w http.ResponseWriter, r *http.Requ
 
 	jsonQuery, err := json.Marshal(queryMessage)
 
-	fmt.Println("EFA2", string(jsonQuery), err)
+	log.Println("H2", string(jsonQuery), err)
 
 	ouput := make(chan ResponseMessage)
-	fmt.Println("Waiting to put input message!")
+	log.Println("H3")
 	dispatcher.input <- InputQueryMessage{queryMessage, ouput}
 
-	//fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
-
-	fmt.Println("Waiting response!")
+	log.Println("H4")
 	response := <-ouput
-	fmt.Println("Response", response)
+	log.Println("H5 Response", response, response.Id)
+
 	fmt.Fprintf(w, "Hi there, I love %s!", response)
 }
