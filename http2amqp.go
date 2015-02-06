@@ -138,5 +138,5 @@ func (dispatcher *HttpDispatcher) httpHandle(w http.ResponseWriter, r *http.Requ
 	response := <-ouput
 	log.Println("H5 Response", response, response.Id)
 
-	fmt.Fprintf(w, "Hi there, I love %s!", response)
+	fmt.Fprintf(w, "Hi there, I love")
 }
