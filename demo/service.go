@@ -23,7 +23,10 @@ func main() {
 
 	amqpPublisher := simpleamqp.NewAmqpPublisher(*amqpuri, "responses")
 	amqpConsumer := simpleamqp.NewAmqpConsumer(*amqpuri)
-	messages := amqpConsumer.Receive("queries", []string{"#"}, *name, 30*time.Minute)
+	messages := amqpConsumer.Receive("queries",
+		[]string{"#"},
+		*name, simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true},
+		30*time.Minute)
 
 	cont := 0
 	for message := range messages {
