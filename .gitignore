@@ -22,3 +22,10 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+### vim ###
+.*.sw[po]
+
+### Intellij ###
+.idea/
+/*.iml
