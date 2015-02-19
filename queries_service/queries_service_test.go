@@ -18,8 +18,10 @@ import (
 )
 
 const (
-	A_TOPIC         = "a-topic"
-	A_QUERY_TIMEOUT = 10 * time.Millisecond
+	A_TOPIC          = "a-topic"
+	A_QUERY_TIMEOUT  = 10 * time.Millisecond
+	A_QUERY_ID       = Id(1)
+	ANOTHER_QUERY_ID = Id(2)
 )
 
 var _ = Describe("Queries service", func() {
@@ -38,14 +40,17 @@ var _ = Describe("Queries service", func() {
 			amqpPublisher = new(mocks.AMQPPublisher)
 			amqpPublisher.On("Publish", mock.Anything, mock.Anything).Return(nil)
 
-			queriesService = NewQueriesService(amqpPublisher, amqpConsumer, A_QUERY_TIMEOUT)
+			idsRepository := new(mocks.IdsRepository)
+			idsRepository.On("Next").Return(A_QUERY_ID)
+
+			queriesService = NewQueriesService(amqpPublisher, amqpConsumer, idsRepository, A_QUERY_TIMEOUT)
 		})
 
 		Context("Response management", func() {
 			It("returns response when a response for the query has been received", func() {
 				go func() {
 					time.Sleep(A_QUERY_TIMEOUT / time.Duration(2))
-					amqpResponses <- newAmqpResponse(0, []string{"foo", "bar"})
+					amqpResponses <- newAmqpResponse(A_QUERY_ID, []string{"foo", "bar"})
 				}()
 
 				result, err := queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
@@ -56,7 +61,7 @@ var _ = Describe("Queries service", func() {
 			It("returns timeout error when response for the query has not been received in time", func() {
 				go func() {
 					time.Sleep(A_QUERY_TIMEOUT * time.Duration(3))
-					amqpResponses <- newAmqpResponse(0, []string{"foo", "bar"})
+					amqpResponses <- newAmqpResponse(A_QUERY_ID, []string{"foo", "bar"})
 				}()
 
 				result, err := queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
@@ -68,7 +73,7 @@ var _ = Describe("Queries service", func() {
 			It("returns timeout error when response for another query", func() {
 				go func() {
 					time.Sleep(A_QUERY_TIMEOUT / time.Duration(2))
-					amqpResponses <- newAmqpResponse(1, []string{"foo", "bar"})
+					amqpResponses <- newAmqpResponse(ANOTHER_QUERY_ID, []string{"foo", "bar"})
 				}()
 
 				result, err := queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
@@ -80,21 +85,17 @@ var _ = Describe("Queries service", func() {
 
 		Context("Query management", func() {
 			It("publish the query to amqp", func() {
-				// Recibe una petición =>
-				// crear ueryMessage
-				// Publicarlo
-
 				_, _ = queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
 
 				expectedCriteriaJson := fmt.Sprintf(`{"%s":"%s"}`, "q", "foo")
-				expectedQueryJson := fmt.Sprintf(`{"id":%d,"criteria":%s}`, 0, expectedCriteriaJson)
+				expectedQueryJson := fmt.Sprintf(`{"id":%d,"criteria":%s}`, A_QUERY_ID, expectedCriteriaJson)
 				amqpPublisher.AssertCalled(GinkgoT(), "Publish", A_TOPIC, []byte(expectedQueryJson))
 			})
 		})
 	})
 })
 
-func newAmqpResponse(id int, response interface{}) simpleamqp.AmqpMessage {
+func newAmqpResponse(id Id, response interface{}) simpleamqp.AmqpMessage {
 	serialized, _ := json.Marshal(map[string]interface{}{
 		"id":      id,
 		"content": response,

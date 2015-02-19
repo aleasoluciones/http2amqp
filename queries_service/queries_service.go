@@ -18,10 +18,11 @@ type QueriesService interface {
 	Query(topic string, criteria Criteria) (Result, error)
 }
 
-func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simpleamqp.AMQPConsumer, timeout time.Duration) QueriesService {
+func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simpleamqp.AMQPConsumer, idsRepository IdsRepository, timeout time.Duration) QueriesService {
 	service := queriesService{
 		amqpConsumer:  amqpConsumer,
 		amqpPublisher: amqpPublisher,
+		idsRepository: idsRepository,
 		queryTimeout:  timeout,
 
 		queries:   make(chan query),
@@ -37,6 +38,7 @@ func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simp
 type queriesService struct {
 	amqpConsumer  simpleamqp.AMQPConsumer
 	amqpPublisher simpleamqp.AMQPPublisher
+	idsRepository IdsRepository
 	queryTimeout  time.Duration
 
 	queries   chan query
@@ -50,12 +52,12 @@ type query struct {
 }
 
 type amqpQueryMessage struct {
-	Id             int      `json:"id"`
+	Id             Id       `json:"id"`
 	CriteriaValues Criteria `json:"criteria"`
 }
 
 type responseMessage struct {
-	Id      int
+	Id      Id
 	Message interface{}
 }
 
@@ -69,7 +71,7 @@ func (service *queriesService) receiveResponses() {
 
 		if deserialized["id"] != nil {
 			service.responses <- responseMessage{
-				Id:      int(deserialized["id"].(float64)),
+				Id:      Id(deserialized["id"].(float64)),
 				Message: deserialized["content"],
 			}
 		}
@@ -77,18 +79,18 @@ func (service *queriesService) receiveResponses() {
 }
 
 func (service *queriesService) dispatch() {
+	var id Id
 	var responses chan responseMessage
 	var found bool
 
-	queryResponses := map[int]chan responseMessage{}
-	id := 0
+	queryResponses := map[Id]chan responseMessage{}
 
 	for {
 		select {
 		case query := <-service.queries:
+			id = service.idsRepository.Next()
 			queryResponses[id] = query.Responses
 			service.publishQuery(id, query)
-			id += 1
 		case response := <-service.responses:
 			responses, found = queryResponses[response.Id]
 			if found {
@@ -98,7 +100,7 @@ func (service *queriesService) dispatch() {
 	}
 }
 
-func (service *queriesService) publishQuery(id int, query query) {
+func (service *queriesService) publishQuery(id Id, query query) {
 	messageToSendJson, _ := json.Marshal(amqpQueryMessage{
 		Id:             id,
 		CriteriaValues: query.CriteriaValues,
@@ -108,6 +110,8 @@ func (service *queriesService) publishQuery(id int, query query) {
 }
 
 type Criteria map[string]string
+
+type Id int
 
 func (service *queriesService) Query(topic string, criteria Criteria) (Result, error) {
 	responses := make(chan responseMessage)
@@ -127,4 +131,8 @@ func (service *queriesService) Query(topic string, criteria Criteria) (Result, e
 	case <-afterTimeout:
 		return nil, errors.New("Timeout")
 	}
+}
+
+type IdsRepository interface {
+	Next() Id
 }
