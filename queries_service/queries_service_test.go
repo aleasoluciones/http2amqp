@@ -6,9 +6,10 @@ package queries_service_test
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"time"
 
+	. "github.com/aleasoluciones/http2amqp/queries_service"
 	"github.com/aleasoluciones/http2amqp/queries_service/mocks"
 	"github.com/aleasoluciones/simpleamqp"
 	. "github.com/onsi/ginkgo"
@@ -25,6 +26,7 @@ var _ = Describe("Queries service", func() {
 	Describe("Query", func() {
 		var (
 			amqpResponses  chan simpleamqp.AmqpMessage
+			amqpPublisher  *mocks.AMQPPublisher
 			queriesService QueriesService
 		)
 
@@ -33,77 +35,69 @@ var _ = Describe("Queries service", func() {
 			amqpConsumer := new(mocks.AMQPConsumer)
 			amqpConsumer.On("Receive", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(amqpResponses)
 
-			queriesService = NewQueriesService(amqpConsumer, A_QUERY_TIMEOUT)
+			amqpPublisher = new(mocks.AMQPPublisher)
+			amqpPublisher.On("Publish", mock.Anything, mock.Anything).Return(nil)
+
+			queriesService = NewQueriesService(amqpPublisher, amqpConsumer, A_QUERY_TIMEOUT)
 		})
 
-		It("returns response when a response for the query has been received", func() {
-			go func() {
-				time.Sleep(A_QUERY_TIMEOUT / time.Duration(2))
-				amqpResponses <- newAmqpResponse([]string{"foo", "bar"})
-			}()
+		Context("Response management", func() {
+			It("returns response when a response for the query has been received", func() {
+				go func() {
+					time.Sleep(A_QUERY_TIMEOUT / time.Duration(2))
+					amqpResponses <- newAmqpResponse(0, []string{"foo", "bar"})
+				}()
 
-			response := queriesService.Query(A_TOPIC, map[string]interface{}{"q": "foo"})
+				result, err := queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
+				Expect(err).NotTo(HaveOccurred())
+				Expect(result).To(ConsistOf("foo", "bar"))
+			})
 
-			Expect(response.Error).NotTo(HaveOccurred())
-			Expect(response.Content).To(ConsistOf("foo", "bar"))
+			It("returns timeout error when response for the query has not been received in time", func() {
+				go func() {
+					time.Sleep(A_QUERY_TIMEOUT * time.Duration(3))
+					amqpResponses <- newAmqpResponse(0, []string{"foo", "bar"})
+				}()
+
+				result, err := queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
+
+				Expect(err).To(MatchError("Timeout"))
+				Expect(result).To(BeNil())
+			})
+
+			It("returns timeout error when response for another query", func() {
+				go func() {
+					time.Sleep(A_QUERY_TIMEOUT / time.Duration(2))
+					amqpResponses <- newAmqpResponse(1, []string{"foo", "bar"})
+				}()
+
+				result, err := queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
+
+				Expect(err).To(MatchError("Timeout"))
+				Expect(result).To(BeNil())
+			})
 		})
 
-		It("returns timeout error when no response for the query has been received in time", func() {
-			go func() {
-				time.Sleep(A_QUERY_TIMEOUT * time.Duration(2))
-				amqpResponses <- newAmqpResponse([]string{"foo", "bar"})
-			}()
+		Context("Query management", func() {
+			It("publish the query to amqp", func() {
+				// Recibe una petición =>
+				// crear ueryMessage
+				// Publicarlo
 
-			response := queriesService.Query(A_TOPIC, map[string]interface{}{"q": "foo"})
+				_, _ = queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
 
-			Expect(response.Error).To(MatchError("Timeout"))
-			Expect(response.Content).To(BeNil())
+				expectedCriteriaJson := fmt.Sprintf(`{"%s":"%s"}`, "q", "foo")
+				expectedQueryJson := fmt.Sprintf(`{"id":%d,"criteria":%s}`, 0, expectedCriteriaJson)
+				amqpPublisher.AssertCalled(GinkgoT(), "Publish", A_TOPIC, []byte(expectedQueryJson))
+			})
 		})
 	})
 })
 
-func NewQueriesService(amqpConsumer simpleamqp.AMQPConsumer, timeout time.Duration) QueriesService {
-	return &queriesServiceT{
-		amqpConsumer: amqpConsumer,
-		queryTimeout: timeout,
-	}
-}
-
-type QueriesService interface {
-	Query(topic string, criteria map[string]interface{}) queryResponse
-}
-
-type queriesServiceT struct {
-	amqpConsumer simpleamqp.AMQPConsumer
-	queryTimeout time.Duration
-}
-
-func (service *queriesServiceT) Query(topic string, criteria map[string]interface{}) queryResponse {
-	var content interface{}
-	var err error
-
-	amqpResponses := service.amqpConsumer.Receive("foo exchange", []string{"foo routing key"}, " no se", simpleamqp.QueueOptions{}, 10)
-
-	afterTimeoutTicker := time.NewTicker(service.queryTimeout)
-	defer afterTimeoutTicker.Stop()
-	afterTimeout := afterTimeoutTicker.C
-
-	select {
-	case amqpResponse := <-amqpResponses:
-		_ = json.Unmarshal([]byte(amqpResponse.Body), &content)
-	case <-afterTimeout:
-		err = errors.New("Timeout")
-	}
-
-	return queryResponse{Content: content, Error: err}
-}
-
-type queryResponse struct {
-	Content interface{}
-	Error   error
-}
-
-func newAmqpResponse(response interface{}) simpleamqp.AmqpMessage {
-	serialized, _ := json.Marshal(response)
+func newAmqpResponse(id int, response interface{}) simpleamqp.AmqpMessage {
+	serialized, _ := json.Marshal(map[string]interface{}{
+		"id":      id,
+		"content": response,
+	})
 	return simpleamqp.AmqpMessage{Body: string(serialized)}
 }
