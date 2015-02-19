@@ -69,11 +69,9 @@ func (service *queriesService) receiveResponses() {
 	for message := range amqpResponses {
 		_ = json.Unmarshal([]byte(message.Body), &deserialized)
 
-		if deserialized["id"] != nil {
-			service.responses <- responseMessage{
-				Id:      Id(deserialized["id"].(float64)),
-				Message: deserialized["content"],
-			}
+		service.responses <- responseMessage{
+			Id:      Id(deserialized["id"].(float64)),
+			Message: deserialized["content"],
 		}
 	}
 }
