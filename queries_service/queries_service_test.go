@@ -84,12 +84,19 @@ var _ = Describe("Queries service", func() {
 		})
 
 		Context("Query management", func() {
-			It("publish the query to amqp", func() {
-				_, _ = queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
+			It("publishes the query to amqp", func() {
+				queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
 
 				expectedCriteriaJson := fmt.Sprintf(`{"%s":"%s"}`, "q", "foo")
 				expectedQueryJson := fmt.Sprintf(`{"id":%d,"criteria":%s}`, A_QUERY_ID, expectedCriteriaJson)
 				amqpPublisher.AssertCalled(GinkgoT(), "Publish", A_TOPIC, []byte(expectedQueryJson))
+			})
+
+			It("publishes two queries with different ids", func() {
+				queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
+				queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
+
+				amqpPublisher.AssertNumberOfCalls(GinkgoT(), "Publish", 2)
 			})
 		})
 	})
