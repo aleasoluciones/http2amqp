@@ -111,8 +111,6 @@ func (service *queriesService) publishQuery(id Id, query query) {
 
 type Criteria map[string]string
 
-type Id int
-
 func (service *queriesService) Query(topic string, criteria Criteria) (Result, error) {
 	responses := make(chan responseMessage)
 	service.queries <- query{
@@ -131,8 +129,4 @@ func (service *queriesService) Query(topic string, criteria Criteria) (Result, e
 	case <-afterTimeout:
 		return nil, errors.New("Timeout")
 	}
-}
-
-type IdsRepository interface {
-	Next() Id
 }
