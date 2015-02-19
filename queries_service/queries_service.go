@@ -44,14 +44,14 @@ type queriesService struct {
 }
 
 type query struct {
-	Id              int
-	RoutingKey      string
-	CriteriaMessage Criteria
-	Responses       chan responseMessage
+	RoutingKey     string
+	CriteriaValues Criteria
+	Responses      chan responseMessage
 }
+
 type amqpQueryMessage struct {
-	Id              int      `json:"id"`
-	CriteriaMessage Criteria `json:"criteria"`
+	Id             int      `json:"id"`
+	CriteriaValues Criteria `json:"criteria"`
 }
 
 type responseMessage struct {
@@ -86,11 +86,8 @@ func (service *queriesService) dispatch() {
 	for {
 		select {
 		case query := <-service.queries:
-			query.Id = id
 			queryResponses[id] = query.Responses
-			messageToSend := amqpQueryMessage{Id: id, CriteriaMessage: query.CriteriaMessage}
-			messageToSendJson, _ := json.Marshal(messageToSend)
-			service.amqpPublisher.Publish(query.RoutingKey, messageToSendJson)
+			service.publishQuery(id, query)
 			id += 1
 		case response := <-service.responses:
 			responses, found = queryResponses[response.Id]
@@ -101,14 +98,23 @@ func (service *queriesService) dispatch() {
 	}
 }
 
+func (service *queriesService) publishQuery(id int, query query) {
+	messageToSendJson, _ := json.Marshal(amqpQueryMessage{
+		Id:             id,
+		CriteriaValues: query.CriteriaValues,
+	})
+
+	service.amqpPublisher.Publish(query.RoutingKey, messageToSendJson)
+}
+
 type Criteria map[string]string
 
 func (service *queriesService) Query(topic string, criteria Criteria) (Result, error) {
 	responses := make(chan responseMessage)
 	service.queries <- query{
-		RoutingKey:      topic,
-		CriteriaMessage: criteria,
-		Responses:       responses,
+		RoutingKey:     topic,
+		CriteriaValues: criteria,
+		Responses:      responses,
 	}
 
 	afterTimeoutTicker := time.NewTicker(service.queryTimeout)
