@@ -121,9 +121,9 @@ func (service *queriesService) Query(topic string, criteria Criteria) (Result, e
 		Responses:      responses,
 	}
 
-	afterTimeoutTicker := time.NewTicker(service.queryTimeout)
-	defer afterTimeoutTicker.Stop()
-	afterTimeout := afterTimeoutTicker.C
+	timeoutTicker := time.NewTicker(service.queryTimeout)
+	defer timeoutTicker.Stop()
+	afterTimeout := timeoutTicker.C
 
 	select {
 	case response := <-responses:
