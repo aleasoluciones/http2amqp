@@ -9,3 +9,14 @@ type Id int
 type IdsRepository interface {
 	Next() Id
 }
+
+func NewIdsRepository() IdsRepository {
+	return &idsRepository{}
+}
+
+type idsRepository struct {
+}
+
+func (repo *idsRepository) Next() Id {
+	return Id(1)
+}
