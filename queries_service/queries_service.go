@@ -12,6 +12,10 @@ import (
 	"github.com/aleasoluciones/simpleamqp"
 )
 
+const (
+	AMQP_RECEIVE_TIMEOUT = 1 * time.Minute
+)
+
 type Result interface{}
 
 type QueriesService interface {
@@ -62,7 +66,7 @@ type responseMessage struct {
 }
 
 func (service *queriesService) receiveResponses() {
-	amqpResponses := service.amqpConsumer.Receive("an exchange", []string{"a topic"}, "no se", simpleamqp.QueueOptions{}, 1*time.Minute)
+	amqpResponses := service.amqpConsumer.Receive("an exchange", []string{"a topic"}, "cola", simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true}, AMQP_RECEIVE_TIMEOUT)
 
 	var deserialized map[string]interface{}
 
