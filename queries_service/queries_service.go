@@ -14,6 +14,7 @@ import (
 
 const (
 	AMQP_RECEIVE_TIMEOUT = 1 * time.Minute
+	RESPONSES_QUEUE      = "queries"
 )
 
 type Result interface{}
@@ -22,12 +23,13 @@ type QueriesService interface {
 	Query(topic string, criteria Criteria) (Result, error)
 }
 
-func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simpleamqp.AMQPConsumer, idsRepository IdsRepository, timeout time.Duration) QueriesService {
+func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simpleamqp.AMQPConsumer, idsRepository IdsRepository, responsesExchange string, timeout time.Duration) QueriesService {
 	service := queriesService{
-		amqpConsumer:  amqpConsumer,
-		amqpPublisher: amqpPublisher,
-		idsRepository: idsRepository,
-		queryTimeout:  timeout,
+		amqpConsumer:      amqpConsumer,
+		amqpPublisher:     amqpPublisher,
+		idsRepository:     idsRepository,
+		responsesExchange: responsesExchange,
+		queryTimeout:      timeout,
 
 		queries:   make(chan query),
 		responses: make(chan responseMessage),
@@ -40,10 +42,11 @@ func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simp
 }
 
 type queriesService struct {
-	amqpConsumer  simpleamqp.AMQPConsumer
-	amqpPublisher simpleamqp.AMQPPublisher
-	idsRepository IdsRepository
-	queryTimeout  time.Duration
+	amqpConsumer      simpleamqp.AMQPConsumer
+	amqpPublisher     simpleamqp.AMQPPublisher
+	idsRepository     IdsRepository
+	responsesExchange string
+	queryTimeout      time.Duration
 
 	queries   chan query
 	responses chan responseMessage
@@ -66,7 +69,12 @@ type responseMessage struct {
 }
 
 func (service *queriesService) receiveResponses() {
-	amqpResponses := service.amqpConsumer.Receive("an exchange", []string{"a topic"}, "cola", simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true}, AMQP_RECEIVE_TIMEOUT)
+	amqpResponses := service.amqpConsumer.Receive(
+		service.responsesExchange,
+		[]string{"#"},
+		RESPONSES_QUEUE,
+		simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true},
+		AMQP_RECEIVE_TIMEOUT)
 
 	var deserialized map[string]interface{}
 

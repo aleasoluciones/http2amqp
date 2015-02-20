@@ -18,10 +18,11 @@ import (
 )
 
 const (
-	A_TOPIC          = "a-topic"
-	A_QUERY_TIMEOUT  = 10 * time.Millisecond
-	A_QUERY_ID       = Id(1)
-	ANOTHER_QUERY_ID = Id(2)
+	A_TOPIC              = "a-topic"
+	A_RESPONSES_EXCHANGE = "a-responses-exchange"
+	A_QUERY_TIMEOUT      = 10 * time.Millisecond
+	A_QUERY_ID           = Id(1)
+	ANOTHER_QUERY_ID     = Id(2)
 )
 
 var _ = Describe("Queries service", func() {
@@ -35,7 +36,7 @@ var _ = Describe("Queries service", func() {
 		BeforeEach(func() {
 			amqpResponses = make(chan simpleamqp.AmqpMessage)
 			amqpConsumer := new(mocks.AMQPConsumer)
-			amqpConsumer.On("Receive", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(amqpResponses)
+			amqpConsumer.On("Receive", A_RESPONSES_EXCHANGE, []string{"#"}, mock.Anything, mock.Anything, mock.Anything).Return(amqpResponses)
 
 			amqpPublisher = new(mocks.AMQPPublisher)
 			amqpPublisher.On("Publish", mock.Anything, mock.Anything).Return(nil)
@@ -43,7 +44,7 @@ var _ = Describe("Queries service", func() {
 			idsRepository := new(mocks.IdsRepository)
 			idsRepository.On("Next").Return(A_QUERY_ID)
 
-			queriesService = NewQueriesService(amqpPublisher, amqpConsumer, idsRepository, A_QUERY_TIMEOUT)
+			queriesService = NewQueriesService(amqpPublisher, amqpConsumer, idsRepository, A_RESPONSES_EXCHANGE, A_QUERY_TIMEOUT)
 		})
 
 		Context("Response management", func() {
