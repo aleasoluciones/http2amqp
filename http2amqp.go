@@ -17,40 +17,42 @@ import (
 )
 
 const (
-	MAX_INFLY         = 1000
-	QUERY_EXCHANGE    = "queries"
-	RESPONSE_EXCHANGE = "responses"
+	maxInFly         = 1000
+	queryExchange    = "queries"
+	responseExchange = "responses"
 )
 
 type QueryMessage struct {
-	Id     int                 `json:"queryId"`
+	ID     int                 `json:"queryId"`
 	Topic  string              `json:"topic"`
 	Values map[string][]string `json:"values"`
 }
 
-type InputQueryMessage struct {
-	queryMessage  QueryMessage
+type inputQueryMessage struct {
+	QueryMessage  QueryMessage
 	outputChannel chan ResponseMessage
 }
 
 type ResponseMessage struct {
-	Id           int
+	ID           int
 	JsonResponse string
 }
 
-type HttpDispatcher struct {
-	input         chan InputQueryMessage
+// HTTPDispatcher struct maintains the channels and configuration for the server
+type HTTPDispatcher struct {
+	input         chan inputQueryMessage
 	responses     chan ResponseMessage
 	amqpPublisher simpleamqp.AmqpPublisher
 	amqpConsumer  simpleamqp.AmqpConsumer
 	timeout       time.Duration
 }
 
-func NewHttpDispatcher(amqpuri string, timeout time.Duration) *HttpDispatcher {
-	dispatcher := HttpDispatcher{
-		input:         make(chan InputQueryMessage),
+// NewHTTPDispatcher return a new http that can dispatch the http queries to a amqp backends
+func NewHTTPDispatcher(amqpuri string, timeout time.Duration) *HTTPDispatcher {
+	dispatcher := HTTPDispatcher{
+		input:         make(chan inputQueryMessage),
 		responses:     make(chan ResponseMessage, 10000),
-		amqpPublisher: *simpleamqp.NewAmqpPublisher(amqpuri, QUERY_EXCHANGE),
+		amqpPublisher: *simpleamqp.NewAmqpPublisher(amqpuri, queryExchange),
 		amqpConsumer:  *simpleamqp.NewAmqpConsumer(amqpuri),
 		timeout:       timeout,
 	}
@@ -58,19 +60,20 @@ func NewHttpDispatcher(amqpuri string, timeout time.Duration) *HttpDispatcher {
 	return &dispatcher
 }
 
-func (dispatcher *HttpDispatcher) ListenAndServe(addressAndPort string) error {
-	go dispatcher.dispatch()
-	go dispatcher.receiveResponses()
+// ListenAndServe bind the http server to the given address and port and start to handle the requests
+func (d *HTTPDispatcher) ListenAndServe(addressAndPort string) error {
+	go d.dispatch()
+	go d.receiveResponses()
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		dispatcher.httpHandle(w, r)
+		d.httpHandle(w, r)
 	})
 
 	log.Println("Server running in", addressAndPort, " ...")
 	return http.ListenAndServe(addressAndPort, nil)
 }
 
-func (d *HttpDispatcher) receiveResponses() {
-	messages := d.amqpConsumer.Receive(RESPONSE_EXCHANGE,
+func (d *HTTPDispatcher) receiveResponses() {
+	messages := d.amqpConsumer.Receive(responseExchange,
 		[]string{"#"},
 		"", simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true},
 		30*time.Minute)
@@ -83,32 +86,32 @@ func (d *HttpDispatcher) receiveResponses() {
 			log.Println("R2 Error", err, message.Body)
 		} else {
 			// FIXME extract id
-			d.responses <- ResponseMessage{m.Id, string(message.Body)}
+			d.responses <- ResponseMessage{m.ID, string(message.Body)}
 		}
 	}
 }
 
-func (d *HttpDispatcher) dispatch() {
-	var outputChannels [MAX_INFLY]chan ResponseMessage
+func (d *HTTPDispatcher) dispatch() {
+	var outputChannels [maxInFly]chan ResponseMessage
 
 	id := 0
 	for {
 		log.Println("Antes select")
 		select {
 		case inputMessage := <-d.input:
-			log.Println("D1 Dispatch input", id, inputMessage.queryMessage, inputMessage.outputChannel)
+			log.Println("D1 Dispatch input", id, inputMessage.QueryMessage, inputMessage.outputChannel)
 			outputChannels[id] = inputMessage.outputChannel
-			inputMessage.queryMessage.Id = id
-			jsonQuery, _ := json.Marshal(inputMessage.queryMessage)
+			inputMessage.QueryMessage.ID = id
+			jsonQuery, _ := json.Marshal(inputMessage.QueryMessage)
 			log.Println("D2 Dispatch input")
-			d.amqpPublisher.Publish(inputMessage.queryMessage.Topic, []byte(jsonQuery))
+			d.amqpPublisher.Publish(inputMessage.QueryMessage.Topic, []byte(jsonQuery))
 			break
 
 		case response := <-d.responses:
-			log.Println("Dispatch response", response, response.Id)
-			if outputChannels[response.Id] != nil {
+			log.Println("Dispatch response", response, response.ID)
+			if outputChannels[response.ID] != nil {
 				select {
-				case outputChannels[response.Id] <- response:
+				case outputChannels[response.ID] <- response:
 					break
 				default:
 					log.Println("Response discarded (timeout)", response)
@@ -120,34 +123,34 @@ func (d *HttpDispatcher) dispatch() {
 		log.Println("Despues select")
 
 		id = id + 1
-		if id == MAX_INFLY {
+		if id == maxInFly {
 			id = 0
 		}
 	}
 }
 
-func (dispatcher *HttpDispatcher) httpHandle(w http.ResponseWriter, r *http.Request) {
+func (d *HTTPDispatcher) httpHandle(w http.ResponseWriter, r *http.Request) {
 	log.Println("H1", r.URL.Path[1:])
 
 	topic := r.URL.Path[1:]
 	queryValues, _ := url.ParseQuery(r.URL.RawQuery)
 
-	queryMessage := QueryMessage{
+	QueryMessage := QueryMessage{
 		Topic:  topic,
 		Values: queryValues,
 	}
 
-	jsonQuery, err := json.Marshal(queryMessage)
+	jsonQuery, err := json.Marshal(QueryMessage)
 
 	log.Println("H2", string(jsonQuery), err)
 
 	ouput := make(chan ResponseMessage)
 	log.Println("H3")
-	dispatcher.input <- InputQueryMessage{queryMessage, ouput}
+	d.input <- inputQueryMessage{QueryMessage, ouput}
 
 	log.Println("H4")
 
-	timeoutTimer := time.NewTimer(dispatcher.timeout)
+	timeoutTimer := time.NewTimer(d.timeout)
 	defer timeoutTimer.Stop()
 	afterTimeout := timeoutTimer.C
 

@@ -32,7 +32,7 @@ func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simp
 		queryTimeout:      timeout,
 
 		queries:   make(chan query),
-		responses: make(chan responseMessage),
+		responses: make(chan ResponseMessage),
 	}
 
 	go service.dispatch()
@@ -49,13 +49,13 @@ type queriesService struct {
 	queryTimeout      time.Duration
 
 	queries   chan query
-	responses chan responseMessage
+	responses chan ResponseMessage
 }
 
 type query struct {
 	RoutingKey     string
 	CriteriaValues Criteria
-	Responses      chan responseMessage
+	Responses      chan ResponseMessage
 }
 
 type amqpQueryMessage struct {
@@ -63,7 +63,7 @@ type amqpQueryMessage struct {
 	CriteriaValues Criteria `json:"criteria"`
 }
 
-type responseMessage struct {
+type ResponseMessage struct {
 	Id      Id
 	Message interface{}
 }
@@ -81,7 +81,7 @@ func (service *queriesService) receiveResponses() {
 	for message := range amqpResponses {
 		_ = json.Unmarshal([]byte(message.Body), &deserialized)
 
-		service.responses <- responseMessage{
+		service.responses <- ResponseMessage{
 			Id:      Id(deserialized["id"].(float64)),
 			Message: deserialized["content"],
 		}
@@ -90,10 +90,10 @@ func (service *queriesService) receiveResponses() {
 
 func (service *queriesService) dispatch() {
 	var id Id
-	var responses chan responseMessage
+	var responses chan ResponseMessage
 	var found bool
 
-	queryResponses := map[Id]chan responseMessage{}
+	queryResponses := map[Id]chan ResponseMessage{}
 
 	for {
 		select {
@@ -122,7 +122,7 @@ func (service *queriesService) publishQuery(id Id, query query) {
 type Criteria map[string]string
 
 func (service *queriesService) Query(topic string, criteria Criteria) (Result, error) {
-	responses := make(chan responseMessage)
+	responses := make(chan ResponseMessage)
 	service.queries <- query{
 		RoutingKey:     topic,
 		CriteriaValues: criteria,

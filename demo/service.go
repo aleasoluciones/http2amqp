@@ -35,7 +35,7 @@ func main() {
 		var m http2amqp.QueryMessage
 		err := json.Unmarshal([]byte(message.Body), &m)
 		if err == nil {
-			response := http2amqp.ResponseMessage{m.Id, fmt.Sprintf("name <%s> cont %d", *name, cont)}
+			response := http2amqp.ResponseMessage{m.ID, fmt.Sprintf("name <%s> cont %d", *name, cont)}
 			json, _ := json.Marshal(response)
 			amqpPublisher.Publish(m.Topic, []byte(json))
 		}
