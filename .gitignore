@@ -29,3 +29,4 @@ _testmain.go
 ### Intellij ###
 .idea/
 /*.iml
+http2amqp
