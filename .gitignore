@@ -29,4 +29,6 @@ _testmain.go
 ### Intellij ###
 .idea/
 /*.iml
+
+### executable ###
 http2amqp
