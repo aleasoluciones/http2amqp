@@ -6,6 +6,7 @@ package queries_http
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"net/url"
@@ -16,8 +17,13 @@ import (
 func NewHTTPServer(queriesService queries_service.QueriesService) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		topic := topicFor(r)
-		criteria := criteriaFor(r)
-		log.Println("[http2amqp] Query", topic, criteria)
+		criteria, err := criteriaFor(r)
+
+		if err != nil {
+			log.Println("[http2amqp] Error parsing criteria", err)
+			http.Error(w, err.Error(), 400)
+			return
+		}
 
 		result, err := queriesService.Query(topic, criteria)
 
@@ -47,9 +53,21 @@ func topicFor(r *http.Request) string {
 	return r.URL.Path[1:]
 }
 
-func criteriaFor(r *http.Request) queries_service.Criteria {
-	criteria, _ := url.ParseQuery(r.URL.RawQuery)
-	log.Println("JGIL", criteria)
+func criteriaFor(r *http.Request) (queries_service.Criteria, error) {
+	criteria := queries_service.Criteria{}
 
-	return queries_service.Criteria{}
+	query, err := url.ParseQuery(r.URL.RawQuery)
+
+	if err != nil {
+		return criteria, errors.New("Error parsing request query string: " + err.Error())
+	}
+
+	for key, value := range query {
+		if len(value) != 1 {
+			return criteria, errors.New("Multiple values in query string not supported")
+		}
+		criteria[key] = value[0]
+	}
+
+	return criteria, nil
 }
