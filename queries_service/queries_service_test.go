@@ -105,8 +105,8 @@ var _ = Describe("Queries service", func() {
 
 func newAmqpResponse(id Id, response interface{}) simpleamqp.AmqpMessage {
 	serialized, _ := json.Marshal(map[string]interface{}{
-		"id":      id,
-		"content": response,
+		"id":     id,
+		"result": response,
 	})
 	return simpleamqp.AmqpMessage{Body: string(serialized)}
 }

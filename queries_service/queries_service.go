@@ -83,7 +83,7 @@ func (service *queriesService) receiveResponses() {
 
 		service.responses <- ResponseMessage{
 			Id:      Id(deserialized["id"].(string)),
-			Message: deserialized["content"],
+			Message: deserialized["result"],
 		}
 	}
 }
