@@ -10,11 +10,11 @@ import (
 	"github.com/aleasoluciones/simpleamqp"
 )
 
-func NewQueriesServiceFactory(brokerUri string, queriesExchange string, responsesExchange string, timeout time.Duration) QueriesService {
+func NewQueriesServiceFactory(brokerUri string, exchange string, timeout time.Duration) QueriesService {
 	return NewQueriesService(
-		simpleamqp.NewAmqpPublisher(brokerUri, queriesExchange),
+		simpleamqp.NewAmqpPublisher(brokerUri, exchange),
 		simpleamqp.NewAmqpConsumer(brokerUri),
 		NewIdsRepository(),
-		responsesExchange,
+		exchange,
 		timeout)
 }

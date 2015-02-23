@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	AMQP_RECEIVE_TIMEOUT = 1 * time.Minute
-	RESPONSES_QUEUE      = "queries"
+	AMQP_RECEIVE_TIMEOUT = 30 * time.Minute
+	RESPONSES_QUEUE      = "queries_responses"
 )
 
 type Result interface{}
@@ -23,13 +23,13 @@ type QueriesService interface {
 	Query(topic string, criteria Criteria) (Result, error)
 }
 
-func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simpleamqp.AMQPConsumer, idsRepository IdsRepository, responsesExchange string, timeout time.Duration) QueriesService {
+func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simpleamqp.AMQPConsumer, idsRepository IdsRepository, exchange string, timeout time.Duration) QueriesService {
 	service := queriesService{
-		amqpConsumer:      amqpConsumer,
-		amqpPublisher:     amqpPublisher,
-		idsRepository:     idsRepository,
-		responsesExchange: responsesExchange,
-		queryTimeout:      timeout,
+		amqpConsumer:  amqpConsumer,
+		amqpPublisher: amqpPublisher,
+		idsRepository: idsRepository,
+		exchange:      exchange,
+		queryTimeout:  timeout,
 
 		queries:   make(chan query),
 		responses: make(chan ResponseMessage),
@@ -42,11 +42,11 @@ func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simp
 }
 
 type queriesService struct {
-	amqpConsumer      simpleamqp.AMQPConsumer
-	amqpPublisher     simpleamqp.AMQPPublisher
-	idsRepository     IdsRepository
-	responsesExchange string
-	queryTimeout      time.Duration
+	amqpConsumer  simpleamqp.AMQPConsumer
+	amqpPublisher simpleamqp.AMQPPublisher
+	idsRepository IdsRepository
+	exchange      string
+	queryTimeout  time.Duration
 
 	queries   chan query
 	responses chan ResponseMessage
@@ -70,8 +70,8 @@ type ResponseMessage struct {
 
 func (service *queriesService) receiveResponses() {
 	amqpResponses := service.amqpConsumer.Receive(
-		service.responsesExchange,
-		[]string{"#"},
+		service.exchange,
+		[]string{"queries.response.#"},
 		RESPONSES_QUEUE,
 		simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true},
 		AMQP_RECEIVE_TIMEOUT)
@@ -116,7 +116,7 @@ func (service *queriesService) publishQuery(id Id, query query) {
 		CriteriaValues: query.CriteriaValues,
 	})
 
-	service.amqpPublisher.Publish(query.RoutingKey, messageToSendJson)
+	service.amqpPublisher.Publish("queries.query."+query.RoutingKey, messageToSendJson)
 }
 
 type Criteria map[string]string
