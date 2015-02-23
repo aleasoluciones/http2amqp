@@ -36,7 +36,7 @@ var _ = Describe("Queries service", func() {
 		BeforeEach(func() {
 			amqpResponses = make(chan simpleamqp.AmqpMessage)
 			amqpConsumer := new(mocks.AMQPConsumer)
-			amqpConsumer.On("Receive", AN_EXCHANGE, []string{"queries.response.#"}, mock.Anything, mock.Anything, mock.Anything).Return(amqpResponses)
+			amqpConsumer.On("Receive", AN_EXCHANGE, []string{"queries.response"}, mock.Anything, mock.Anything, mock.Anything).Return(amqpResponses)
 
 			amqpPublisher = new(mocks.AMQPPublisher)
 			amqpPublisher.On("Publish", mock.Anything, mock.Anything).Return(nil)

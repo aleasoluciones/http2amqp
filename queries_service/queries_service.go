@@ -71,7 +71,7 @@ type ResponseMessage struct {
 func (service *queriesService) receiveResponses() {
 	amqpResponses := service.amqpConsumer.Receive(
 		service.exchange,
-		[]string{"queries.response.#"},
+		[]string{"queries.response"},
 		RESPONSES_QUEUE,
 		simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true},
 		AMQP_RECEIVE_TIMEOUT)
