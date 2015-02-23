@@ -63,6 +63,11 @@ type amqpQueryMessage struct {
 	CriteriaValues Criteria `json:"criteria"`
 }
 
+type amqpResponseMessage struct {
+	Id     Id     `json:"id"`
+	Result Result `json:"result"`
+}
+
 type ResponseMessage struct {
 	Id      Id
 	Message interface{}
@@ -76,14 +81,14 @@ func (service *queriesService) receiveResponses() {
 		simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true},
 		AMQP_RECEIVE_TIMEOUT)
 
-	var deserialized map[string]interface{}
+	var deserialized amqpResponseMessage
 
 	for message := range amqpResponses {
 		_ = json.Unmarshal([]byte(message.Body), &deserialized)
 
 		service.responses <- ResponseMessage{
-			Id:      Id(deserialized["id"].(string)),
-			Message: deserialized["result"],
+			Id:      deserialized.Id,
+			Message: deserialized.Result,
 		}
 	}
 }
