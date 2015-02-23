@@ -21,7 +21,7 @@ func NewHTTPServer(queriesService queries_service.QueriesService) {
 
 		if err != nil {
 			log.Println("[http2amqp] Error parsing criteria", err)
-			http.Error(w, err.Error(), 400)
+			newJsonError(w, err.Error(), 400)
 			return
 		}
 
@@ -29,7 +29,7 @@ func NewHTTPServer(queriesService queries_service.QueriesService) {
 
 		if err != nil {
 			log.Println("[http2amqp] Query error", err)
-			http.Error(w, err.Error(), 500)
+			newJsonError(w, err.Error(), 404)
 			return
 		}
 
@@ -37,7 +37,7 @@ func NewHTTPServer(queriesService queries_service.QueriesService) {
 
 		if err != nil {
 			log.Println("[http2amqp] Error marshaling query result", err)
-			http.Error(w, "Internal Server Error", 500)
+			newJsonError(w, "Internal Server Error", 500)
 			return
 		}
 
@@ -70,4 +70,23 @@ func criteriaFor(r *http.Request) (queries_service.Criteria, error) {
 	}
 
 	return criteria, nil
+}
+
+func newJsonError(w http.ResponseWriter, message string, status int) {
+	serialized, err := json.Marshal(jsonError{Status: status, Error: message})
+
+	if err != nil {
+		log.Println("[http2amqp] Error marshaling error message", err)
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	w.Write(serialized)
+}
+
+type jsonError struct {
+	Status int    `json:"status"`
+	Error  string `json:"error"`
 }
