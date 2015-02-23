@@ -33,7 +33,7 @@ func NewHTTPServer(queriesService queries_service.QueriesService) {
 			return
 		}
 
-		serialized, err := json.Marshal(result)
+		serialized, err := json.Marshal(jsonResponse{Result: result})
 
 		if err != nil {
 			log.Println("[http2amqp] Error marshaling query result", err)
@@ -89,4 +89,8 @@ func newJsonError(w http.ResponseWriter, message string, status int) {
 type jsonError struct {
 	Status int    `json:"status"`
 	Error  string `json:"error"`
+}
+
+type jsonResponse struct {
+	Result queries_service.Result `json:"result"`
 }
