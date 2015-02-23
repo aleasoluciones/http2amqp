@@ -17,8 +17,6 @@ const (
 	RESPONSES_QUEUE      = "queries_responses"
 )
 
-type Result interface{}
-
 type QueriesService interface {
 	Query(topic string, criteria Criteria) (Result, error)
 }
@@ -32,7 +30,7 @@ func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simp
 		queryTimeout:  timeout,
 
 		queries:   make(chan query),
-		responses: make(chan ResponseMessage),
+		responses: make(chan response),
 	}
 
 	go service.dispatch()
@@ -49,13 +47,20 @@ type queriesService struct {
 	queryTimeout  time.Duration
 
 	queries   chan query
-	responses chan ResponseMessage
+	responses chan response
 }
+
+type Result interface{}
 
 type query struct {
 	RoutingKey     string
 	CriteriaValues Criteria
-	Responses      chan ResponseMessage
+	Responses      chan response
+}
+
+type response struct {
+	Id     Id
+	Result Result
 }
 
 type amqpQueryMessage struct {
@@ -66,11 +71,6 @@ type amqpQueryMessage struct {
 type amqpResponseMessage struct {
 	Id     Id     `json:"id"`
 	Result Result `json:"result"`
-}
-
-type ResponseMessage struct {
-	Id      Id
-	Message interface{}
 }
 
 func (service *queriesService) receiveResponses() {
@@ -86,19 +86,19 @@ func (service *queriesService) receiveResponses() {
 	for message := range amqpResponses {
 		_ = json.Unmarshal([]byte(message.Body), &deserialized)
 
-		service.responses <- ResponseMessage{
-			Id:      deserialized.Id,
-			Message: deserialized.Result,
+		service.responses <- response{
+			Id:     deserialized.Id,
+			Result: deserialized.Result,
 		}
 	}
 }
 
 func (service *queriesService) dispatch() {
 	var id Id
-	var responses chan ResponseMessage
+	var responses chan response
 	var found bool
 
-	queryResponses := map[Id]chan ResponseMessage{}
+	queryResponses := map[Id]chan response{}
 
 	for {
 		select {
@@ -127,7 +127,7 @@ func (service *queriesService) publishQuery(id Id, query query) {
 type Criteria map[string]string
 
 func (service *queriesService) Query(topic string, criteria Criteria) (Result, error) {
-	responses := make(chan ResponseMessage)
+	responses := make(chan response)
 	service.queries <- query{
 		RoutingKey:     topic,
 		CriteriaValues: criteria,
@@ -140,7 +140,7 @@ func (service *queriesService) Query(topic string, criteria Criteria) (Result, e
 
 	select {
 	case response := <-responses:
-		return response.Message, nil
+		return response.Result, nil
 	case <-afterTimeout:
 		return nil, errors.New("Timeout")
 	}
