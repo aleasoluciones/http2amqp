@@ -4,7 +4,11 @@
 
 package queries_service
 
-type Id int
+import (
+	"code.google.com/p/go-uuid/uuid"
+)
+
+type Id string
 
 type IdsRepository interface {
 	Next() Id
@@ -18,5 +22,5 @@ type idsRepository struct {
 }
 
 func (repo *idsRepository) Next() Id {
-	return Id(1)
+	return Id(uuid.New())
 }

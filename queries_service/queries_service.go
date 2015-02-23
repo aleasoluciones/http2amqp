@@ -82,7 +82,7 @@ func (service *queriesService) receiveResponses() {
 		_ = json.Unmarshal([]byte(message.Body), &deserialized)
 
 		service.responses <- ResponseMessage{
-			Id:      Id(deserialized["id"].(float64)),
+			Id:      Id(deserialized["id"].(string)),
 			Message: deserialized["content"],
 		}
 	}

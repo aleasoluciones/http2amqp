@@ -21,8 +21,8 @@ const (
 	A_TOPIC          = "a-topic"
 	AN_EXCHANGE      = "an-exchange"
 	A_QUERY_TIMEOUT  = 10 * time.Millisecond
-	A_QUERY_ID       = Id(1)
-	ANOTHER_QUERY_ID = Id(2)
+	A_QUERY_ID       = Id("1")
+	ANOTHER_QUERY_ID = Id("2")
 )
 
 var _ = Describe("Queries service", func() {
@@ -89,7 +89,7 @@ var _ = Describe("Queries service", func() {
 				queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
 
 				expectedCriteriaJson := fmt.Sprintf(`{"%s":"%s"}`, "q", "foo")
-				expectedQueryJson := fmt.Sprintf(`{"id":%d,"criteria":%s}`, A_QUERY_ID, expectedCriteriaJson)
+				expectedQueryJson := fmt.Sprintf(`{"id":"%s","criteria":%s}`, A_QUERY_ID, expectedCriteriaJson)
 				amqpPublisher.AssertCalled(GinkgoT(), "Publish", "queries.query."+A_TOPIC, []byte(expectedQueryJson))
 			})
 
