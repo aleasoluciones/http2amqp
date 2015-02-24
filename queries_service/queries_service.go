@@ -7,6 +7,7 @@ package queries_service
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/aleasoluciones/goaleasoluciones/safemap"
@@ -111,6 +112,8 @@ func (service *queriesService) publishQuery(id Id, topic string, criteria Criter
 		CriteriaValues: criteria,
 	})
 
+	log.Println("[queries_service] Query id:", id, "topic:", topic, "criteria:", criteria)
+
 	service.amqpPublisher.Publish("queries.query."+topic, serialized)
 }
 
@@ -131,6 +134,7 @@ func (service *queriesService) Query(topic string, criteria Criteria) (Result, e
 	case response := <-responses:
 		return response.Result, nil
 	case <-afterTimeout:
+		log.Println("[queries_service] Timeout for query id:", id)
 		return nil, errors.New("Timeout")
 	}
 }
