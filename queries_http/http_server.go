@@ -28,7 +28,6 @@ func NewHTTPServer(queriesService queries_service.QueriesService) {
 		result, err := queriesService.Query(topic, criteria)
 
 		if err != nil {
-			log.Println("[http2amqp] Query error", err)
 			newJsonError(w, err.Error(), 404)
 			return
 		}

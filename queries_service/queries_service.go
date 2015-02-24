@@ -29,8 +29,8 @@ func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simp
 		exchange:      exchange,
 		queryTimeout:  timeout,
 
-		queries:   make(chan query),
-		responses: make(chan response),
+		queryResponses: map[Id]chan response{},
+		responses:      make(chan response),
 	}
 
 	go service.dispatch()
@@ -46,17 +46,11 @@ type queriesService struct {
 	exchange      string
 	queryTimeout  time.Duration
 
-	queries   chan query
-	responses chan response
+	queryResponses map[Id]chan response
+	responses      chan response
 }
 
 type Result interface{}
-
-type query struct {
-	RoutingKey     string
-	CriteriaValues Criteria
-	Responses      chan response
-}
 
 type response struct {
 	Id     Id
@@ -94,20 +88,13 @@ func (service *queriesService) receiveResponses() {
 }
 
 func (service *queriesService) dispatch() {
-	var id Id
 	var responses chan response
 	var found bool
 
-	queryResponses := map[Id]chan response{}
-
 	for {
 		select {
-		case query := <-service.queries:
-			id = service.idsRepository.Next()
-			queryResponses[id] = query.Responses
-			service.publishQuery(id, query)
 		case response := <-service.responses:
-			responses, found = queryResponses[response.Id]
+			responses, found = service.queryResponses[response.Id]
 			if found {
 				responses <- response
 			}
@@ -115,24 +102,23 @@ func (service *queriesService) dispatch() {
 	}
 }
 
-func (service *queriesService) publishQuery(id Id, query query) {
+func (service *queriesService) publishQuery(id Id, topic string, criteria Criteria) {
 	serialized, _ := json.Marshal(amqpQueryMessage{
 		Id:             id,
-		CriteriaValues: query.CriteriaValues,
+		CriteriaValues: criteria,
 	})
 
-	service.amqpPublisher.Publish("queries.query."+query.RoutingKey, serialized)
+	service.amqpPublisher.Publish("queries.query."+topic, serialized)
 }
 
 type Criteria map[string]string
 
 func (service *queriesService) Query(topic string, criteria Criteria) (Result, error) {
+	id := service.idsRepository.Next()
 	responses := make(chan response)
-	service.queries <- query{
-		RoutingKey:     topic,
-		CriteriaValues: criteria,
-		Responses:      responses,
-	}
+	service.queryResponses[id] = responses
+	defer delete(service.queryResponses, id)
+	service.publishQuery(id, topic, criteria)
 
 	timeoutTicker := time.NewTicker(service.queryTimeout)
 	defer timeoutTicker.Stop()
