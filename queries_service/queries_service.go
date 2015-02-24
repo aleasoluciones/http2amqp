@@ -116,12 +116,12 @@ func (service *queriesService) dispatch() {
 }
 
 func (service *queriesService) publishQuery(id Id, query query) {
-	messageToSendJson, _ := json.Marshal(amqpQueryMessage{
+	serialized, _ := json.Marshal(amqpQueryMessage{
 		Id:             id,
 		CriteriaValues: query.CriteriaValues,
 	})
 
-	service.amqpPublisher.Publish("queries.query."+query.RoutingKey, messageToSendJson)
+	service.amqpPublisher.Publish("queries.query."+query.RoutingKey, serialized)
 }
 
 type Criteria map[string]string
