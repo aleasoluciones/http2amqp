@@ -9,6 +9,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/aleasoluciones/goaleasoluciones/safemap"
 	"github.com/aleasoluciones/simpleamqp"
 )
 
@@ -29,7 +30,7 @@ func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simp
 		exchange:      exchange,
 		queryTimeout:  timeout,
 
-		queryResponses: map[Id]chan response{},
+		queryResponses: safemap.NewSafeMap(),
 		responses:      make(chan response),
 	}
 
@@ -46,7 +47,7 @@ type queriesService struct {
 	exchange      string
 	queryTimeout  time.Duration
 
-	queryResponses map[Id]chan response
+	queryResponses safemap.SafeMap
 	responses      chan response
 }
 
@@ -88,15 +89,17 @@ func (service *queriesService) receiveResponses() {
 }
 
 func (service *queriesService) dispatch() {
+	var value safemap.Value
 	var responses chan response
 	var found bool
 
 	for {
 		select {
-		case response := <-service.responses:
-			responses, found = service.queryResponses[response.Id]
+		case response_ := <-service.responses:
+			value, found = service.queryResponses.Find(response_.Id)
 			if found {
-				responses <- response
+				responses = value.(chan response)
+				responses <- response_
 			}
 		}
 	}
@@ -116,8 +119,8 @@ type Criteria map[string]string
 func (service *queriesService) Query(topic string, criteria Criteria) (Result, error) {
 	id := service.idsRepository.Next()
 	responses := make(chan response)
-	service.queryResponses[id] = responses
-	defer delete(service.queryResponses, id)
+	service.queryResponses.Insert(id, responses)
+	defer service.queryResponses.Delete(id)
 	service.publishQuery(id, topic, criteria)
 
 	timeoutTicker := time.NewTicker(service.queryTimeout)
