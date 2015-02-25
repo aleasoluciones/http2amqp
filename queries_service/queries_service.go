@@ -30,12 +30,9 @@ func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simp
 		idsRepository: idsRepository,
 		exchange:      exchange,
 		queryTimeout:  timeout,
-
-		queryResponses: safemap.NewSafeMap(),
-		responses:      make(chan response),
+		queryResults:  safemap.NewSafeMap(),
 	}
 
-	go service.dispatch()
 	go service.receiveResponses()
 
 	return &service
@@ -47,17 +44,10 @@ type queriesService struct {
 	idsRepository IdsRepository
 	exchange      string
 	queryTimeout  time.Duration
-
-	queryResponses safemap.SafeMap
-	responses      chan response
+	queryResults  safemap.SafeMap
 }
 
 type Result interface{}
-
-type response struct {
-	Id     Id
-	Result Result
-}
 
 type amqpQueryMessage struct {
 	Id             Id       `json:"id"`
@@ -78,30 +68,17 @@ func (service *queriesService) receiveResponses() {
 		AMQP_RECEIVE_TIMEOUT)
 
 	var deserialized amqpResponseMessage
+	var value safemap.Value
+	var results chan Result
+	var found bool
 
 	for message := range amqpResponses {
 		_ = json.Unmarshal([]byte(message.Body), &deserialized)
 
-		service.responses <- response{
-			Id:     deserialized.Id,
-			Result: deserialized.Result,
-		}
-	}
-}
-
-func (service *queriesService) dispatch() {
-	var value safemap.Value
-	var responses chan response
-	var found bool
-
-	for {
-		select {
-		case response_ := <-service.responses:
-			value, found = service.queryResponses.Find(response_.Id)
-			if found {
-				responses = value.(chan response)
-				responses <- response_
-			}
+		value, found = service.queryResults.Find(deserialized.Id)
+		if found {
+			results = value.(chan Result)
+			results <- deserialized.Result
 		}
 	}
 }
@@ -121,9 +98,9 @@ type Criteria map[string]string
 
 func (service *queriesService) Query(topic string, criteria Criteria) (Result, error) {
 	id := service.idsRepository.Next()
-	responses := make(chan response)
-	service.queryResponses.Insert(id, responses)
-	defer service.queryResponses.Delete(id)
+	results := make(chan Result)
+	service.queryResults.Insert(id, results)
+	defer service.queryResults.Delete(id)
 	service.publishQuery(id, topic, criteria)
 
 	timeoutTicker := time.NewTicker(service.queryTimeout)
@@ -131,8 +108,8 @@ func (service *queriesService) Query(topic string, criteria Criteria) (Result, e
 	afterTimeout := timeoutTicker.C
 
 	select {
-	case response := <-responses:
-		return response.Result, nil
+	case result := <-results:
+		return result, nil
 	case <-afterTimeout:
 		log.Println("[queries_service] Timeout for query id:", id)
 		return nil, errors.New("Timeout")
