@@ -14,5 +14,10 @@ To access from a remote machine you can perform a [ssh tunnel](http://en.wikiped
 
 ```
 ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no <your-remote-host> -L 18080:localhost:18080 -N
+```
+
+And then:
+
+```
 go tool pprof http2amqp http://localhost:18080/debug/pprof/heap
 ```
