@@ -51,11 +51,13 @@ type Result interface{}
 
 type amqpQueryMessage struct {
 	Id             Id       `json:"id"`
+	Verb           string   `json:"verb"`
 	CriteriaValues Criteria `json:"criteria"`
 }
 
 type amqpResponseMessage struct {
 	Id     Id     `json:"id"`
+	Verb   string `json:"verb"`
 	Result Result `json:"result"`
 }
 
@@ -83,9 +85,10 @@ func (service *queriesService) receiveResponses() {
 	}
 }
 
-func (service *queriesService) publishQuery(id Id, topic string, criteria Criteria) {
+func (service *queriesService) publishQuery(id Id, topic string, verb string, criteria Criteria) {
 	serialized, _ := json.Marshal(amqpQueryMessage{
 		Id:             id,
+		Verb:           verb,
 		CriteriaValues: criteria,
 	})
 
@@ -101,7 +104,7 @@ func (service *queriesService) Query(topic string, criteria Criteria) (Result, e
 	results := make(chan Result)
 	service.queryResults.Insert(id, results)
 	defer service.queryResults.Delete(id)
-	service.publishQuery(id, topic, criteria)
+	service.publishQuery(id, topic, "get", criteria)
 
 	timeoutTicker := time.NewTicker(service.queryTimeout)
 	defer timeoutTicker.Stop()
