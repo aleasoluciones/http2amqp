@@ -89,7 +89,7 @@ var _ = Describe("Queries service", func() {
 				queriesService.Query(A_TOPIC, Criteria{"q": "foo"})
 
 				expectedCriteriaJson := fmt.Sprintf(`{"%s":"%s"}`, "q", "foo")
-				expectedQueryJson := fmt.Sprintf(`{"id":"%s","criteria":%s}`, A_QUERY_ID, expectedCriteriaJson)
+				expectedQueryJson := fmt.Sprintf(`{"id":"%s","verb":"get","criteria":%s}`, A_QUERY_ID, expectedCriteriaJson)
 				amqpPublisher.AssertCalled(GinkgoT(), "Publish", "queries.query."+A_TOPIC, []byte(expectedQueryJson))
 			})
 
