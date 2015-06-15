@@ -5,11 +5,11 @@
 package queries_http
 
 import (
-	"encoding/json"
-	"errors"
 	"log"
+
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
-	"net/url"
 
 	"github.com/aleasoluciones/http2amqp/queries_service"
 )
@@ -17,15 +17,22 @@ import (
 func NewHTTPServer(queriesService queries_service.QueriesService) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		topic := topicFor(r)
-		criteria, err := criteriaFor(r)
 
+		request := queries_service.Request{
+			Method: r.Method,
+			URL:    r.URL,
+			Header: r.Header,
+		}
+
+		var err error
+		request.Body, err = ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.Println("[http2amqp] Error parsing criteria", err)
+			log.Println("[http2amqp] Error reading body", err)
 			newJsonError(w, err.Error(), 400)
 			return
 		}
 
-		result, err := queriesService.Query(topic, criteria)
+		result, err := queriesService.Query(topic, request)
 
 		if err != nil {
 			newJsonError(w, err.Error(), 404)
@@ -50,25 +57,6 @@ func NewHTTPServer(queriesService queries_service.QueriesService) {
 
 func topicFor(r *http.Request) string {
 	return r.URL.Path[1:]
-}
-
-func criteriaFor(r *http.Request) (queries_service.Criteria, error) {
-	criteria := queries_service.Criteria{}
-
-	query, err := url.ParseQuery(r.URL.RawQuery)
-
-	if err != nil {
-		return criteria, errors.New("Error parsing request query string: " + err.Error())
-	}
-
-	for key, value := range query {
-		if len(value) != 1 {
-			return criteria, errors.New("Multiple values in query string not supported")
-		}
-		criteria[key] = value[0]
-	}
-
-	return criteria, nil
 }
 
 func newJsonError(w http.ResponseWriter, message string, status int) {

@@ -5,10 +5,13 @@
 package queries_service
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 	"time"
+
+	"encoding/json"
+	"net/http"
+	"net/url"
 
 	"github.com/aleasoluciones/goaleasoluciones/safemap"
 	"github.com/aleasoluciones/simpleamqp"
@@ -19,8 +22,22 @@ const (
 	RESPONSES_QUEUE      = "queries_responses"
 )
 
+type Request struct {
+	Method string
+	URL    *url.URL
+	Header http.Header
+	Body   []byte
+}
+
+type Response struct {
+	Method string
+	Header http.Header
+	Body   []byte
+	Status int
+}
+
 type QueriesService interface {
-	Query(topic string, criteria Criteria) (Result, error)
+	Query(topic string, request Request) (Response, error)
 }
 
 func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simpleamqp.AMQPConsumer, idsRepository IdsRepository, exchange string, timeout time.Duration) QueriesService {
@@ -50,15 +67,13 @@ type queriesService struct {
 type Result interface{}
 
 type amqpQueryMessage struct {
-	Id             Id       `json:"id"`
-	Verb           string   `json:"verb"`
-	CriteriaValues Criteria `json:"criteria"`
+	Id      Id      `json:"id"`
+	Request Request `json:"request"`
 }
 
 type amqpResponseMessage struct {
 	Id     Id     `json:"id"`
-	Verb   string `json:"verb"`
-	Result Result `json:"result"`
+	Result []byte `json:"result"`
 }
 
 func (service *queriesService) receiveResponses() {
@@ -85,36 +100,34 @@ func (service *queriesService) receiveResponses() {
 	}
 }
 
-func (service *queriesService) publishQuery(id Id, topic string, verb string, criteria Criteria) {
-	serialized, _ := json.Marshal(amqpQueryMessage{
-		Id:             id,
-		Verb:           verb,
-		CriteriaValues: criteria,
+func (service *queriesService) publishQuery(id Id, topic string, request Request) {
+	serialized, _ := json.Marshal(struct {
+		Id      Id
+		Request Request
+	}{
+		Id:      id,
+		Request: request,
 	})
-
-	log.Println("[queries_service] Query id:", id, "topic:", topic, "criteria:", criteria)
-
+	log.Println("[queries_service] Query id:", id, "topic:", topic, "request:", request)
 	service.amqpPublisher.Publish("queries.query."+topic, serialized)
 }
 
-type Criteria map[string]string
-
-func (service *queriesService) Query(topic string, criteria Criteria) (Result, error) {
+func (service *queriesService) Query(topic string, request Request) (Response, error) {
 	id := service.idsRepository.Next()
-	results := make(chan Result)
-	service.queryResults.Insert(id, results)
+	responses := make(chan Response)
+	service.queryResults.Insert(id, responses)
 	defer service.queryResults.Delete(id)
-	service.publishQuery(id, topic, "get", criteria)
+	service.publishQuery(id, topic, request)
 
 	timeoutTicker := time.NewTicker(service.queryTimeout)
 	defer timeoutTicker.Stop()
 	afterTimeout := timeoutTicker.C
 
 	select {
-	case result := <-results:
-		return result, nil
+	case response := <-responses:
+		return response, nil
 	case <-afterTimeout:
 		log.Println("[queries_service] Timeout for query id:", id)
-		return nil, errors.New("Timeout")
+		return Response{}, errors.New("Timeout")
 	}
 }
