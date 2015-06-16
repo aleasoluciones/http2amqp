@@ -6,15 +6,14 @@ import (
 	"os"
 	"time"
 
-	"github.com/aleasoluciones/http2amqp/queries_http"
-	"github.com/aleasoluciones/http2amqp/queries_service"
+	"github.com/aleasoluciones/http2amqp"
 )
 
 func main() {
 	brokerUri, exchange, timeout := parseArgs()
 
-	queriesService := queries_service.NewQueriesServiceFactory(brokerUri, exchange, timeout)
-	queries_http.NewHTTPServer(queriesService)
+	queriesService := http2amqp.NewQueriesServiceFactory(brokerUri, exchange, timeout)
+	http2amqp.NewHTTPServer(queriesService)
 }
 
 func parseArgs() (string, string, time.Duration) {

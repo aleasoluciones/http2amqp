@@ -2,16 +2,14 @@
 // source code is governed by a MIT-style license that can be found in the
 // LICENSE file.
 
-package queries_service
+package http2amqp
 
 import (
 	"code.google.com/p/go-uuid/uuid"
 )
 
-type Id string
-
 type IdsRepository interface {
-	Next() Id
+	Next() string
 }
 
 func NewIdsRepository() IdsRepository {
@@ -21,6 +19,6 @@ func NewIdsRepository() IdsRepository {
 type idsRepository struct {
 }
 
-func (repo *idsRepository) Next() Id {
-	return Id(uuid.New())
+func (repo *idsRepository) Next() string {
+	return string(uuid.New())
 }

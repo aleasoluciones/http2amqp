@@ -2,7 +2,7 @@
 // source code is governed by a MIT-style license that can be found in the
 // LICENSE file.
 
-package queries_http
+package http2amqp
 
 import (
 	"log"
@@ -11,15 +11,13 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-
-	"github.com/aleasoluciones/http2amqp/queries_service"
 )
 
-func NewHTTPServer(queriesService queries_service.QueriesService) {
+func NewHTTPServer(queriesService QueriesService) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		topic := topicFor(r)
 
-		request := queries_service.Request{
+		request := Request{
 			Method: r.Method,
 			URL:    r.URL,
 			Header: r.Header,

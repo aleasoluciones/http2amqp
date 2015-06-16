@@ -5,37 +5,12 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
-	"net/url"
 	"os"
 	"time"
 
+	"github.com/aleasoluciones/http2amqp"
 	"github.com/aleasoluciones/simpleamqp"
 )
-
-type Request struct {
-	Method string      `json:"method"`
-	URL    *url.URL    `json:"url"`
-	Header http.Header `json:"header"`
-	Body   []byte      `json:"body"`
-}
-
-type Response struct {
-	Status int         `json:"status"`
-	Header http.Header `json:"header"`
-	Body   []byte      `json:"body"`
-}
-
-type amqpRequestMessage struct {
-	Id            string  `json:"id"`
-	Request       Request `json:"request"`
-	ResponseTopic string  `json:"responseTopic"`
-}
-
-type amqpResponseMessage struct {
-	Id       string   `json:"id"`
-	Response Response `json:"response"`
-}
 
 func main() {
 	amqpuri := flag.String("amqpuri", LocalBrokerUri(), "AMQP connection uri")
@@ -54,7 +29,7 @@ func main() {
 
 	for inMessage := range inMessages {
 		log.Println("Message Received. Topic:", inMessage.RoutingKey)
-		var request amqpRequestMessage
+		var request http2amqp.AmqpRequestMessage
 		err := json.Unmarshal([]byte(inMessage.Body), &request)
 		if err != nil {
 			log.Panic("Error deserializing ", err)
@@ -64,9 +39,9 @@ func main() {
 		log.Println("Message Received. Id:", request.Id, request.Request.Method, request.Request.URL)
 		log.Println("Body:", string(request.Request.Body))
 
-		response := amqpResponseMessage{
+		response := http2amqp.AmqpResponseMessage{
 			Id: request.Id,
-			Response: Response{
+			Response: http2amqp.Response{
 				Body:   request.Request.Body,
 				Status: 200,
 			},

@@ -2,7 +2,7 @@
 // source code is governed by a MIT-style license that can be found in the
 // LICENSE file.
 
-package queries_service
+package http2amqp
 
 import (
 	"errors"
@@ -36,13 +36,13 @@ type Response struct {
 	Body   []byte      `json:"body"`
 }
 
-type amqpRequestMessage struct {
+type AmqpRequestMessage struct {
 	Id            string  `json:"id"`
 	Request       Request `json:"request"`
 	ResponseTopic string  `json:"responseTopic"`
 }
 
-type amqpResponseMessage struct {
+type AmqpResponseMessage struct {
 	Id       string   `json:"id"`
 	Response Response `json:"response"`
 }
@@ -83,7 +83,7 @@ func (service *queriesService) receiveResponses() {
 		simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true},
 		AMQP_RECEIVE_TIMEOUT)
 
-	var deserialized amqpResponseMessage
+	var deserialized AmqpResponseMessage
 	var value safemap.Value
 	var responses chan Response
 	var found bool
@@ -99,8 +99,8 @@ func (service *queriesService) receiveResponses() {
 	}
 }
 
-func (service *queriesService) publishQuery(id Id, topic string, request Request) {
-	serialized, _ := json.Marshal(amqpRequestMessage{
+func (service *queriesService) publishQuery(id string, topic string, request Request) {
+	serialized, _ := json.Marshal(AmqpRequestMessage{
 		Id:            id,
 		Request:       request,
 		ResponseTopic: RESPONSE_TOPIC,
