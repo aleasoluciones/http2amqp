@@ -6,7 +6,7 @@ deps:
 
 test:
 	- pkill -f echoservice
-	./echoservice >> salida &
+	./echoservice -topic '*.test.ok'  &
 	BROKER_URI=amqp://guest:guest@localhost/ go test -v -tags integration ./...
 
 build:
