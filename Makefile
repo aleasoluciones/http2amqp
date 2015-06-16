@@ -7,7 +7,7 @@ deps:
 test:
 	- pkill -f echoservice
 	./echoservice -topic '*.test.ok'  &
-	BROKER_URI=amqp://guest:guest@localhost/ go test -v -tags integration ./...
+	BROKER_URI=amqp://guest:guest@localhost/ go test -v -tags integration -parallel 2 ./...
 
 build:
 	go vet
