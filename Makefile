@@ -2,6 +2,7 @@ all: deps build test
 
 deps:
 	go get -t -v ./...
+	go get github.com/stretchr/testify/assert
 
 test:
 	- pkill -f echoservice
