@@ -32,23 +32,18 @@ func NewHTTPServer(queriesService queries_service.QueriesService) {
 			return
 		}
 
-		result, err := queriesService.Query(topic, request)
+		response, err := queriesService.Query(topic, request)
 
 		if err != nil {
 			newJsonError(w, err.Error(), 404)
 			return
 		}
 
-		serialized, err := json.Marshal(jsonResponse{Result: result})
-
-		if err != nil {
-			log.Println("[http2amqp] Error marshaling query result", err)
-			newJsonError(w, "Internal Server Error", 500)
-			return
+		for header := range response.Header {
+			w.Header().Set(header, response.Header.Get(header))
 		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(serialized)
+		w.WriteHeader(response.Status)
+		w.Write(response.Body)
 	})
 
 	log.Println("[http2amqp] Starting HTTP server at 127.0.0.1:18080 ...")
@@ -76,8 +71,4 @@ func newJsonError(w http.ResponseWriter, message string, status int) {
 type jsonError struct {
 	Status int    `json:"status"`
 	Error  string `json:"error"`
-}
-
-type jsonResponse struct {
-	Result queries_service.Result `json:"result"`
 }

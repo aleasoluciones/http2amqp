@@ -30,10 +30,19 @@ type Request struct {
 }
 
 type Response struct {
-	Method string
+	Status int
 	Header http.Header
 	Body   []byte
-	Status int
+}
+
+type amqpRequestMessage struct {
+	Id      Id      `json:"id"`
+	Request Request `json:"request"`
+}
+
+type amqpResponseMessage struct {
+	Id       Id       `json:"id"`
+	Response Response `json:"response"`
 }
 
 type QueriesService interface {
@@ -42,12 +51,12 @@ type QueriesService interface {
 
 func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simpleamqp.AMQPConsumer, idsRepository IdsRepository, exchange string, timeout time.Duration) QueriesService {
 	service := queriesService{
-		amqpConsumer:  amqpConsumer,
-		amqpPublisher: amqpPublisher,
-		idsRepository: idsRepository,
-		exchange:      exchange,
-		queryTimeout:  timeout,
-		queryResults:  safemap.NewSafeMap(),
+		amqpConsumer:   amqpConsumer,
+		amqpPublisher:  amqpPublisher,
+		idsRepository:  idsRepository,
+		exchange:       exchange,
+		queryTimeout:   timeout,
+		queryResponses: safemap.NewSafeMap(),
 	}
 
 	go service.receiveResponses()
@@ -56,24 +65,12 @@ func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simp
 }
 
 type queriesService struct {
-	amqpConsumer  simpleamqp.AMQPConsumer
-	amqpPublisher simpleamqp.AMQPPublisher
-	idsRepository IdsRepository
-	exchange      string
-	queryTimeout  time.Duration
-	queryResults  safemap.SafeMap
-}
-
-type Result interface{}
-
-type amqpQueryMessage struct {
-	Id      Id      `json:"id"`
-	Request Request `json:"request"`
-}
-
-type amqpResponseMessage struct {
-	Id     Id     `json:"id"`
-	Result []byte `json:"result"`
+	amqpConsumer   simpleamqp.AMQPConsumer
+	amqpPublisher  simpleamqp.AMQPPublisher
+	idsRepository  IdsRepository
+	exchange       string
+	queryTimeout   time.Duration
+	queryResponses safemap.SafeMap
 }
 
 func (service *queriesService) receiveResponses() {
@@ -86,25 +83,22 @@ func (service *queriesService) receiveResponses() {
 
 	var deserialized amqpResponseMessage
 	var value safemap.Value
-	var results chan Result
+	var responses chan Response
 	var found bool
 
 	for message := range amqpResponses {
 		_ = json.Unmarshal([]byte(message.Body), &deserialized)
 
-		value, found = service.queryResults.Find(deserialized.Id)
+		value, found = service.queryResponses.Find(deserialized.Id)
 		if found {
-			results = value.(chan Result)
-			results <- deserialized.Result
+			responses = value.(chan Response)
+			responses <- deserialized.Response
 		}
 	}
 }
 
 func (service *queriesService) publishQuery(id Id, topic string, request Request) {
-	serialized, _ := json.Marshal(struct {
-		Id      Id
-		Request Request
-	}{
+	serialized, _ := json.Marshal(amqpRequestMessage{
 		Id:      id,
 		Request: request,
 	})
@@ -115,8 +109,8 @@ func (service *queriesService) publishQuery(id Id, topic string, request Request
 func (service *queriesService) Query(topic string, request Request) (Response, error) {
 	id := service.idsRepository.Next()
 	responses := make(chan Response)
-	service.queryResults.Insert(id, responses)
-	defer service.queryResults.Delete(id)
+	service.queryResponses.Insert(id, responses)
+	defer service.queryResponses.Delete(id)
 	service.publishQuery(id, topic, request)
 
 	timeoutTicker := time.NewTicker(service.queryTimeout)
