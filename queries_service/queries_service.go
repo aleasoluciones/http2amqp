@@ -103,7 +103,7 @@ func (service *queriesService) publishQuery(id Id, topic string, request Request
 		Request: request,
 	})
 	log.Println("[queries_service] Query id:", id, "topic:", topic, "request:", request)
-	service.amqpPublisher.Publish("queries.query."+topic, serialized)
+	service.amqpPublisher.Publish(topic, serialized)
 }
 
 func (service *queriesService) Query(topic string, request Request) (Response, error) {

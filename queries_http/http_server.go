@@ -6,6 +6,7 @@ package queries_http
 
 import (
 	"log"
+	"strings"
 
 	"encoding/json"
 	"io/ioutil"
@@ -51,7 +52,7 @@ func NewHTTPServer(queriesService queries_service.QueriesService) {
 }
 
 func topicFor(r *http.Request) string {
-	return r.URL.Path[1:]
+	return r.Method + "." + strings.Replace(r.URL.Path[1:], "/", ".", -1)
 }
 
 func newJsonError(w http.ResponseWriter, message string, status int) {
