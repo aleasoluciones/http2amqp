@@ -13,8 +13,8 @@ import (
 	"net/http"
 )
 
-func NewHTTPServer(queriesService QueriesService) {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+func NewHTTPServerFunc(queriesService QueriesService) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		topic := topicFor(r)
 
 		request := Request{
@@ -43,10 +43,8 @@ func NewHTTPServer(queriesService QueriesService) {
 		}
 		w.WriteHeader(response.Status)
 		w.Write(response.Body)
-	})
+	}
 
-	log.Println("[http2amqp] Starting HTTP server at 127.0.0.1:18080 ...")
-	http.ListenAndServe("127.0.0.1:18080", nil)
 }
 
 func topicFor(r *http.Request) string {

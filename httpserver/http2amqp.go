@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"log"
+	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"time"
@@ -13,7 +15,11 @@ func main() {
 	brokerUri, exchange, timeout := parseArgs()
 
 	queriesService := http2amqp.NewQueriesServiceFactory(brokerUri, exchange, timeout)
-	http2amqp.NewHTTPServer(queriesService)
+
+	http.HandleFunc("/", http2amqp.NewHTTPServerFunc(queriesService))
+	log.Println("[http2amqp] Starting HTTP server at 127.0.0.1:18080 ...")
+	http.ListenAndServe("127.0.0.1:18080", nil)
+
 }
 
 func parseArgs() (string, string, time.Duration) {

@@ -35,7 +35,12 @@ func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simp
 		queryResponses: safemap.NewSafeMap(),
 	}
 
-	go service.receiveResponses()
+	go service.receiveResponses(service.amqpConsumer.Receive(
+		service.exchange,
+		[]string{RESPONSE_TOPIC},
+		RESPONSES_QUEUE,
+		simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true},
+		AMQP_RECEIVE_TIMEOUT))
 
 	return &service
 }
@@ -49,14 +54,7 @@ type queriesService struct {
 	queryResponses safemap.SafeMap
 }
 
-func (service *queriesService) receiveResponses() {
-	amqpResponses := service.amqpConsumer.Receive(
-		service.exchange,
-		[]string{RESPONSE_TOPIC},
-		RESPONSES_QUEUE,
-		simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true},
-		AMQP_RECEIVE_TIMEOUT)
-
+func (service *queriesService) receiveResponses(amqpResponses chan simpleamqp.AmqpMessage) {
 	var deserialized AmqpResponseMessage
 	var value safemap.Value
 	var responses chan Response
