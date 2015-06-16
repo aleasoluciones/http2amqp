@@ -14,14 +14,15 @@ import (
 
 func main() {
 	amqpuri := flag.String("amqpuri", LocalBrokerUri(), "AMQP connection uri")
+	exchange := flag.String("exchange", "events", "AMQP exchange name")
 	flag.Parse()
 
 	fmt.Println("Using broker:", *amqpuri)
-	amqpPublisher := simpleamqp.NewAmqpPublisher(*amqpuri, "EX")
+	amqpPublisher := simpleamqp.NewAmqpPublisher(*amqpuri, *exchange)
 	amqpConsumer := simpleamqp.NewAmqpConsumer(*amqpuri)
 
 	inMessages := amqpConsumer.Receive(
-		"EX",
+		*exchange,
 		[]string{"GET.#"},
 		"",
 		simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true},

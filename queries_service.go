@@ -10,8 +10,6 @@ import (
 	"time"
 
 	"encoding/json"
-	"net/http"
-	"net/url"
 
 	"github.com/aleasoluciones/goaleasoluciones/safemap"
 	"github.com/aleasoluciones/simpleamqp"
@@ -22,30 +20,6 @@ const (
 	RESPONSES_QUEUE      = "queries_responses"
 	RESPONSE_TOPIC       = "queries.response"
 )
-
-type Request struct {
-	Method string      `json:"method"`
-	URL    *url.URL    `json:"url"`
-	Header http.Header `json:"header"`
-	Body   []byte      `json:"body"`
-}
-
-type Response struct {
-	Status int         `json:"status"`
-	Header http.Header `json:"header"`
-	Body   []byte      `json:"body"`
-}
-
-type AmqpRequestMessage struct {
-	Id            string  `json:"id"`
-	Request       Request `json:"request"`
-	ResponseTopic string  `json:"responseTopic"`
-}
-
-type AmqpResponseMessage struct {
-	Id       string   `json:"id"`
-	Response Response `json:"response"`
-}
 
 type QueriesService interface {
 	Query(topic string, request Request) (Response, error)
