@@ -14,21 +14,22 @@ import (
 )
 
 type Request struct {
-	Method string
-	URL    *url.URL
-	Header http.Header
-	Body   []byte
+	Method string      `json:"method"`
+	URL    *url.URL    `json:"url"`
+	Header http.Header `json:"header"`
+	Body   []byte      `json:"body"`
 }
 
 type Response struct {
-	Status int
-	Header http.Header
-	Body   []byte
+	Status int         `json:"status"`
+	Header http.Header `json:"header"`
+	Body   []byte      `json:"body"`
 }
 
 type amqpRequestMessage struct {
-	Id      string  `json:"id"`
-	Request Request `json:"request"`
+	Id            string  `json:"id"`
+	Request       Request `json:"request"`
+	ResponseTopic string  `json:"responseTopic"`
 }
 
 type amqpResponseMessage struct {
@@ -73,7 +74,7 @@ func main() {
 
 		serializedResponse, _ := json.Marshal(response)
 		fmt.Println("Sending response", string(serializedResponse))
-		amqpPublisher.Publish("queries.response", serializedResponse)
+		amqpPublisher.Publish(request.ResponseTopic, serializedResponse)
 	}
 }
 func LocalBrokerUri() string {

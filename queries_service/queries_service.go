@@ -20,28 +20,30 @@ import (
 const (
 	AMQP_RECEIVE_TIMEOUT = 30 * time.Minute
 	RESPONSES_QUEUE      = "queries_responses"
+	RESPONSE_TOPIC       = "queries.response"
 )
 
 type Request struct {
-	Method string
-	URL    *url.URL
-	Header http.Header
-	Body   []byte
+	Method string      `json:"method"`
+	URL    *url.URL    `json:"url"`
+	Header http.Header `json:"header"`
+	Body   []byte      `json:"body"`
 }
 
 type Response struct {
-	Status int
-	Header http.Header
-	Body   []byte
+	Status int         `json:"status"`
+	Header http.Header `json:"header"`
+	Body   []byte      `json:"body"`
 }
 
 type amqpRequestMessage struct {
-	Id      Id      `json:"id"`
-	Request Request `json:"request"`
+	Id            string  `json:"id"`
+	Request       Request `json:"request"`
+	ResponseTopic string  `json:"responseTopic"`
 }
 
 type amqpResponseMessage struct {
-	Id       Id       `json:"id"`
+	Id       string   `json:"id"`
 	Response Response `json:"response"`
 }
 
@@ -76,7 +78,7 @@ type queriesService struct {
 func (service *queriesService) receiveResponses() {
 	amqpResponses := service.amqpConsumer.Receive(
 		service.exchange,
-		[]string{"queries.response"},
+		[]string{RESPONSE_TOPIC},
 		RESPONSES_QUEUE,
 		simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true},
 		AMQP_RECEIVE_TIMEOUT)
@@ -99,8 +101,9 @@ func (service *queriesService) receiveResponses() {
 
 func (service *queriesService) publishQuery(id Id, topic string, request Request) {
 	serialized, _ := json.Marshal(amqpRequestMessage{
-		Id:      id,
-		Request: request,
+		Id:            id,
+		Request:       request,
+		ResponseTopic: RESPONSE_TOPIC,
 	})
 	log.Println("[queries_service] Query id:", id, "topic:", topic, "request:", request)
 	service.amqpPublisher.Publish(topic, serialized)
