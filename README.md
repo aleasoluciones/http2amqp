@@ -2,22 +2,17 @@
 
 [![Build Status](https://travis-ci.org/aleasoluciones/http2amqp.svg)](https://travis-ci.org/aleasoluciones/http2amqp)
 
-## Profiling
 
-The HTTP server exposes an endpoint to access [profiling data](http://golang.org/pkg/net/http/pprof/).
+## Generating new version
 
+Update code and commit changes.
+Generate a new tag and push the tag. The version will be automatically upload to [github releases](https://github.com/aleasoluciones/http2amqp/releases)
+
+Example:
 ```
-go tool pprof http2amqp http://localhost:18080/debug/pprof/heap
+git tag v0.3.0
+git push
+git push --tags
 ```
 
-To access from a remote machine you can perform a [ssh tunnel](http://en.wikipedia.org/wiki/Tunneling_protocol#Secure_Shell_tunneling).
-
-```
-ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no <your-remote-host> -L 18080:localhost:18080 -N
-```
-
-And then:
-
-```
-go tool pprof http2amqp http://localhost:18080/debug/pprof/heap
-```
+Will generate the 0.3.0 version at https://github.com/aleasoluciones/http2amqp/releases/download/v0.3.0/http2amqp
