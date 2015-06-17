@@ -13,7 +13,7 @@ import (
 	"net/http"
 )
 
-func NewHTTPServerFunc(queriesService QueriesService) func(w http.ResponseWriter, r *http.Request) {
+func NewHTTPServerFunc(http2amqpService *http2amqpService) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		topic := topicFor(r)
 
@@ -31,7 +31,7 @@ func NewHTTPServerFunc(queriesService QueriesService) func(w http.ResponseWriter
 			return
 		}
 
-		response, err := queriesService.Query(topic, request)
+		response, err := http2amqpService.Query(topic, request)
 
 		if err != nil {
 			newJsonError(w, err.Error(), 404)

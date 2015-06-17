@@ -21,15 +21,12 @@ const (
 	RESPONSE_TOPIC       = "queries.response"
 )
 
-type QueriesService interface {
-	Query(topic string, request Request) (Response, error)
-}
+func NewHttp2AmqpService(brokerUri, exchange string, timeout time.Duration) *http2amqpService {
 
-func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simpleamqp.AMQPConsumer, idsRepository IdsRepository, exchange string, timeout time.Duration) QueriesService {
-	service := queriesService{
-		amqpConsumer:   amqpConsumer,
-		amqpPublisher:  amqpPublisher,
-		idsRepository:  idsRepository,
+	service := http2amqpService{
+		amqpConsumer:   simpleamqp.NewAmqpConsumer(brokerUri),
+		amqpPublisher:  simpleamqp.NewAmqpPublisher(brokerUri, exchange),
+		idsRepository:  NewIdsRepository(),
 		exchange:       exchange,
 		queryTimeout:   timeout,
 		queryResponses: safemap.NewSafeMap(),
@@ -45,7 +42,7 @@ func NewQueriesService(amqpPublisher simpleamqp.AMQPPublisher, amqpConsumer simp
 	return &service
 }
 
-type queriesService struct {
+type http2amqpService struct {
 	amqpConsumer   simpleamqp.AMQPConsumer
 	amqpPublisher  simpleamqp.AMQPPublisher
 	idsRepository  IdsRepository
@@ -54,7 +51,7 @@ type queriesService struct {
 	queryResponses safemap.SafeMap
 }
 
-func (service *queriesService) receiveResponses(amqpResponses chan simpleamqp.AmqpMessage) {
+func (service *http2amqpService) receiveResponses(amqpResponses chan simpleamqp.AmqpMessage) {
 	var deserialized AmqpResponseMessage
 	var value safemap.Value
 	var responses chan Response
@@ -71,7 +68,7 @@ func (service *queriesService) receiveResponses(amqpResponses chan simpleamqp.Am
 	}
 }
 
-func (service *queriesService) publishQuery(id string, topic string, request Request) {
+func (service *http2amqpService) publishQuery(id string, topic string, request Request) {
 	serialized, _ := json.Marshal(AmqpRequestMessage{
 		Id:            id,
 		Request:       request,
@@ -81,7 +78,7 @@ func (service *queriesService) publishQuery(id string, topic string, request Req
 	service.amqpPublisher.Publish(topic, serialized)
 }
 
-func (service *queriesService) Query(topic string, request Request) (Response, error) {
+func (service *http2amqpService) Query(topic string, request Request) (Response, error) {
 	id := service.idsRepository.Next()
 	responses := make(chan Response)
 	service.queryResponses.Insert(id, responses)

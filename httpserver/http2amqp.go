@@ -14,9 +14,9 @@ import (
 func main() {
 	brokerUri, exchange, timeout := parseArgs()
 
-	queriesService := http2amqp.NewQueriesServiceFactory(brokerUri, exchange, timeout)
+	http2amqpService := http2amqp.NewHttp2AmqpService(brokerUri, exchange, timeout)
 
-	http.HandleFunc("/", http2amqp.NewHTTPServerFunc(queriesService))
+	http.HandleFunc("/", http2amqp.NewHTTPServerFunc(http2amqpService))
 	log.Println("[http2amqp] Starting HTTP server at 127.0.0.1:18080 ...")
 	http.ListenAndServe("127.0.0.1:18080", nil)
 

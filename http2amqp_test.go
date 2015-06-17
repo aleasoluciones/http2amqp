@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var service = NewQueriesServiceFactory(os.Getenv("BROKER_URI"), "events", 1*time.Second)
+var service = NewHttp2AmqpService(os.Getenv("BROKER_URI"), "events", 1*time.Second)
 
 func TestHttpSuccessfullGetToEchoServer(t *testing.T) {
 	t.Parallel()
