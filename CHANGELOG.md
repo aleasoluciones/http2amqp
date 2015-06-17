@@ -1,3 +1,9 @@
+## [0.3.0] - 2015-06-17
+
+* Support multiple methods
+* simplified code
+* API changes
+
 ## [0.2.0] - 2015-02-24
 
 * Bugfix. Memory leak in the map that stores pending responses.
