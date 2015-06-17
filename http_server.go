@@ -48,7 +48,7 @@ func NewHTTPServerFunc(http2amqpService *http2amqpService) func(w http.ResponseW
 }
 
 func topicFor(r *http.Request) string {
-	return r.Method + "." + strings.Replace(r.URL.Path[1:], "/", ".", -1)
+	return strings.ToLower(r.Method) + "." + strings.Replace(r.URL.Path[1:], "/", ".", -1)
 }
 
 func newJsonError(w http.ResponseWriter, message string, status int) {

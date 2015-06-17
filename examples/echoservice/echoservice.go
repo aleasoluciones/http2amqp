@@ -15,7 +15,7 @@ import (
 func main() {
 	amqpuri := flag.String("amqpuri", LocalBrokerUri(), "AMQP connection uri")
 	exchange := flag.String("exchange", "events", "AMQP exchange name")
-	topic := flag.String("topic", "GET.#", "topic to subscribe")
+	topic := flag.String("topic", "get.#", "topic to subscribe")
 	flag.Parse()
 
 	fmt.Println("Using broker:", *amqpuri)
