@@ -8,6 +8,7 @@ import (
 	"errors"
 	"log"
 	"time"
+	"strconv"
 
 	"encoding/json"
 
@@ -83,9 +84,17 @@ func (service *http2amqpService) Query(topic string, request Request) (Response,
 	responses := make(chan Response)
 	service.queryResponses.Insert(id, responses)
 	defer service.queryResponses.Delete(id)
+
+	timeout := service.queryTimeout
+	for k, v := range request.URL.Query() {
+	    if k == "timeout" {
+	       seconds, _ := strconv.Atoi(v[0])
+	       timeout = time.Duration(seconds) * time.Second
+	    }
+	}
 	service.publishQuery(id, topic, request)
 
-	timeoutTicker := time.NewTicker(service.queryTimeout)
+	timeoutTicker := time.NewTicker(timeout)
 	defer timeoutTicker.Stop()
 	afterTimeout := timeoutTicker.C
 
