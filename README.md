@@ -18,4 +18,6 @@ git push --tags
 Will generate the 0.3.0 version at https://github.com/aleasoluciones/http2amqp/releases/download/v0.3.0/http2amqp
 
 ## TODO
- - timeout parameter for each request
+ - test timeout parameter for each request
+ - implement delay parameter for echo server to allow tests timeouts
+ 
