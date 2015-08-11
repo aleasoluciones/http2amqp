@@ -7,8 +7,8 @@ package http2amqp
 import (
 	"errors"
 	"log"
-	"time"
 	"strconv"
+	"time"
 
 	"encoding/json"
 
@@ -87,10 +87,10 @@ func (service *http2amqpService) Query(topic string, request Request) (Response,
 
 	timeout := service.queryTimeout
 	for k, v := range request.URL.Query() {
-	    if k == "timeout" {
-	       seconds, _ := strconv.Atoi(v[0])
-	       timeout = time.Duration(seconds) * time.Second
-	    }
+		if k == "timeout" {
+			milliseconds, _ := strconv.Atoi(v[0])
+			timeout = time.Duration(milliseconds) * time.Millisecond
+		}
 	}
 	service.publishQuery(id, topic, request)
 

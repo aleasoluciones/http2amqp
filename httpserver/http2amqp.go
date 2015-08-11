@@ -25,10 +25,10 @@ func main() {
 func parseArgs() (string, string, time.Duration) {
 	amqpuri := flag.String("amqpuri", localBrokerUri(), "AMQP connection uri")
 	exchange := flag.String("exchange", "events", "AMQP exchange name")
-	timeout := flag.Int("timeout", 1, "Queries timeout in seconds")
+	timeout := flag.Int("timeout", 1000, "Queries timeout in milliseconds")
 	flag.Parse()
 
-	return *amqpuri, *exchange, time.Duration(*timeout) * time.Second
+	return *amqpuri, *exchange, time.Duration(*timeout) * time.Millisecond
 }
 
 func localBrokerUri() string {
