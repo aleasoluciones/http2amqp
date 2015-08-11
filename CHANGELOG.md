@@ -1,3 +1,7 @@
+## [0.4.0] - 2015-08-11
+
+* Support a query string argument to especify a request timeout in milliseconds (e.g. curl http://localhost/foo?timeout=1500)
+
 ## [0.3.0] - 2015-06-17
 
 * Support multiple methods
