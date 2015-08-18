@@ -1,0 +1,15 @@
+{{ component }}:
+  image: aleasoluciones/{{ component }}:{{ gitrevision }}
+  restart: always
+  command: {{ component }}
+  hostname: {{ ansible_hostname}}-{{ component }}
+  environment:
+    - BROKER_URI={{ inv_net_broker_uri }}
+  volumes:
+    - {{ docker_compose_data }}/{{ component }}:/data
+    - /etc/localtime:/etc/localtime:ro
+  ports:
+    - "18080:18080"
+  log_driver: "syslog"
+  log_opt:
+    syslog-tag: "{{ component }}"

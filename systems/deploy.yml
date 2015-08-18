@@ -1,0 +1,29 @@
+---
+- hosts: "felix"
+
+  vars_files:
+    - ~/.felix/vars.yml
+
+  tasks:
+    - name: create docker-compose dir
+      file:
+        path={{ docker_compose_etc }}/{{ component }}
+        state=directory
+
+    - name: configure docker compose instructions
+      template:
+        src=docker-compose.yml.j2
+        dest={{ docker_compose_etc }}/{{ component }}/docker-compose.yml
+
+    - name: pull docker images
+      command: docker-compose pull chdir={{ docker_compose_etc }}/{{ component }}
+
+    - name: stop component
+      command: docker-compose stop chdir={{ docker_compose_etc }}/{{ component }}
+      ignore_errors: True
+
+    - name: start component
+      command: docker-compose up -d chdir={{ docker_compose_etc }}/{{ component }}
+
+    - name: notify deploy
+      local_action: command riemann-client -H {{ riemann_host }} -P {{ riemann_port }} send -s "deploy" -h {{ component }} -S ok -m 1 -d "Deploy {{ component }} to {{ ansible_hostname }}"
