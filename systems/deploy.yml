@@ -1,5 +1,6 @@
 ---
 - hosts: "felix"
+  gather_facts: false
 
   vars_files:
     - ~/.felix/vars.yml
