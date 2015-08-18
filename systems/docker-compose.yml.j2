@@ -2,7 +2,7 @@
   image: aleasoluciones/{{ component }}:{{ gitrevision }}
   restart: always
   command: {{ component }}
-  hostname: {{ ansible_hostname}}-{{ component }}
+  hostname: {{ inventory_hostname}}-{{ component }}
   environment:
     - BROKER_URI={{ inv_net_broker_uri }}
   volumes:
