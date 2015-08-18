@@ -27,4 +27,4 @@
       command: docker-compose up -d chdir={{ docker_compose_etc }}/{{ component }}
 
     - name: notify deploy
-      local_action: command riemann-client -H {{ riemann_host }} -P {{ riemann_port }} send -s "deploy" -h {{ component }} -S ok -m 1 -d "Deploy {{ component }} to {{ ansible_hostname }}"
+      local_action: command riemann-client -H {{ riemann_host }} -P {{ riemann_port }} send -s "deploy" -h {{ component }} -S ok -m 1 -d "Deploy {{ component }} to {{ inventory_hostname }}"
