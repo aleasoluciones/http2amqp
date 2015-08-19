@@ -3,8 +3,6 @@ go:
   - 1.4
   - tip
 
-
-
 install:
   - make deps
   - make build
@@ -15,15 +13,3 @@ services:
 script:
   - make test
 
-deploy:
-  provider: releases
-  api_key:
-    secure: Qrv6xoCgQ2QXiJ3fLOt2eXtyhKAinu7vSIqUkp3nv5Iu3c1o7G64TdCj5Td4Ijt4R/1ABqPb6RNCRTDj0JZFRlqbuC3KJTOTjvfQFT7402QPy4DfZZ9Kv87rZRwhNYflG90pxzkyzWXaw5gy4xxdjlc8vKo7FI5BQILtOEfKGwQ=
-  file:
-    - http2amqp
-    - echoservice
-  skip_cleanup: true
-  on:
-    repo: aleasoluciones/http2amqp
-    tags: true
-    go: 1.4
