@@ -27,14 +27,14 @@ func NewHTTPServerFunc(http2amqpService *http2amqpService) func(w http.ResponseW
 		request.Body, err = ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Println("[http2amqp] Error reading body", err)
-			newJsonError(w, err.Error(), 400)
+			newJSONError(w, err.Error(), 400)
 			return
 		}
 
 		response, err := http2amqpService.Query(topic, request)
 
 		if err != nil {
-			newJsonError(w, err.Error(), 404)
+			newJSONError(w, err.Error(), 404)
 			return
 		}
 
@@ -51,7 +51,7 @@ func topicFor(r *http.Request) string {
 	return strings.ToLower(r.Method) + "." + strings.Replace(r.URL.Path[1:], "/", ".", -1)
 }
 
-func newJsonError(w http.ResponseWriter, message string, status int) {
+func newJSONError(w http.ResponseWriter, message string, status int) {
 	serialized, err := json.Marshal(jsonError{Status: status, Error: message})
 
 	if err != nil {
