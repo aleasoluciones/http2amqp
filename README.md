@@ -6,8 +6,10 @@
 ```
 $ ./http2amqp --help
 Usage of ./http2amqp:
+  -address="0.0.0.0": Listen address
   -amqpuri="amqp://guest:guest@localhost/": AMQP connection uri
   -exchange="events": AMQP exchange name
+  -port="18080": Listen port
   -timeout=1000: Queries timeout in milliseconds
 ```
 
