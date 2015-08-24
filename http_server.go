@@ -13,7 +13,7 @@ import (
 	"net/http"
 )
 
-func NewHTTPServerFunc(http2amqpService *http2amqpService) func(w http.ResponseWriter, r *http.Request) {
+func NewHTTPServerFunc(HTTP2amqpService *HTTP2amqpService) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		topic := topicFor(r)
 
@@ -31,7 +31,7 @@ func NewHTTPServerFunc(http2amqpService *http2amqpService) func(w http.ResponseW
 			return
 		}
 
-		response, err := http2amqpService.Query(topic, request)
+		response, err := HTTP2amqpService.Query(topic, request)
 
 		if err != nil {
 			newJSONError(w, err.Error(), 404)

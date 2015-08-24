@@ -20,9 +20,9 @@ func main() {
 	timeout := flag.Int("timeout", 1000, "Queries timeout in milliseconds")
 	flag.Parse()
 
-	http2amqpService := http2amqp.NewHttp2AmqpService(*amqpuri, *exchange, time.Duration(*timeout)*time.Millisecond)
+	HTTP2amqpService := http2amqp.NewHTTP2AmqpService(*amqpuri, *exchange, time.Duration(*timeout)*time.Millisecond)
 
-	http.HandleFunc("/", http2amqp.NewHTTPServerFunc(http2amqpService))
+	http.HandleFunc("/", http2amqp.NewHTTPServerFunc(HTTP2amqpService))
 	addressAndPort := fmt.Sprintf("%s:%s", *address, *port)
 	log.Println("[http2amqp] Starting HTTP server at ", addressAndPort)
 	http.ListenAndServe(addressAndPort, nil)
