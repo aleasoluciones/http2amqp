@@ -17,9 +17,9 @@ import (
 )
 
 const (
-	AMQP_RECEIVE_TIMEOUT = 30 * time.Minute
-	RESPONSES_QUEUE      = "queries_responses"
-	RESPONSE_TOPIC       = "queries.response"
+	amqpReceiveTimeout = 30 * time.Minute
+	responsesQueue     = "queries_responses"
+	responseTopic      = "queries.response"
 )
 
 func NewHTTP2AmqpService(brokerUri, exchange string, timeout time.Duration) *HTTP2amqpService {
@@ -35,10 +35,10 @@ func NewHTTP2AmqpService(brokerUri, exchange string, timeout time.Duration) *HTT
 
 	go service.receiveResponses(service.amqpConsumer.Receive(
 		service.exchange,
-		[]string{RESPONSE_TOPIC},
-		RESPONSES_QUEUE,
+		[]string{responseTopic},
+		responsesQueue,
 		simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true},
-		AMQP_RECEIVE_TIMEOUT))
+		amqpReceiveTimeout))
 
 	return &service
 }
@@ -73,7 +73,7 @@ func (service *HTTP2amqpService) publishQuery(id string, topic string, request R
 	serialized, _ := json.Marshal(AmqpRequestMessage{
 		Id:            id,
 		Request:       request,
-		ResponseTopic: RESPONSE_TOPIC,
+		ResponseTopic: responseTopic,
 	})
 	log.Println("[queries_service] Query id:", id, "topic:", topic, "request:", request)
 	service.amqpPublisher.Publish(topic, serialized)
