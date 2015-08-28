@@ -22,11 +22,11 @@ const (
 	responseTopic      = "queries.response"
 )
 
-func NewHTTP2AmqpService(brokerUri, exchange string, timeout time.Duration) *HTTP2amqpService {
+func NewHTTP2AmqpService(brokerURI, exchange string, timeout time.Duration) *HTTP2amqpService {
 
 	service := HTTP2amqpService{
-		amqpConsumer:   simpleamqp.NewAmqpConsumer(brokerUri),
-		amqpPublisher:  simpleamqp.NewAmqpPublisher(brokerUri, exchange),
+		amqpConsumer:   simpleamqp.NewAmqpConsumer(brokerURI),
+		amqpPublisher:  simpleamqp.NewAmqpPublisher(brokerURI, exchange),
 		idsRepository:  NewIdsRepository(),
 		exchange:       exchange,
 		queryTimeout:   timeout,
