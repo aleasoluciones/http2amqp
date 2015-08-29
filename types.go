@@ -23,12 +23,12 @@ type Response struct {
 }
 
 type AmqpRequestMessage struct {
-	Id            string  `json:"id"`
+	ID            string  `json:"id"`
 	Request       Request `json:"request"`
 	ResponseTopic string  `json:"responseTopic"`
 }
 
 type AmqpResponseMessage struct {
-	Id       string   `json:"id"`
+	ID       string   `json:"id"`
 	Response Response `json:"response"`
 }

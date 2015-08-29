@@ -61,7 +61,7 @@ func (service *HTTP2amqpService) receiveResponses(amqpResponses chan simpleamqp.
 	for message := range amqpResponses {
 		_ = json.Unmarshal([]byte(message.Body), &deserialized)
 
-		value, found = service.queryResponses.Find(deserialized.Id)
+		value, found = service.queryResponses.Find(deserialized.ID)
 		if found {
 			responses = value.(chan Response)
 			responses <- deserialized.Response
@@ -71,7 +71,7 @@ func (service *HTTP2amqpService) receiveResponses(amqpResponses chan simpleamqp.
 
 func (service *HTTP2amqpService) publishQuery(id string, topic string, request Request) {
 	serialized, _ := json.Marshal(AmqpRequestMessage{
-		Id:            id,
+		ID:            id,
 		Request:       request,
 		ResponseTopic: responseTopic,
 	})

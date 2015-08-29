@@ -38,11 +38,11 @@ func main() {
 		}
 
 		fmt.Println("Receive", request)
-		log.Println("Message Received. Id:", request.Id, request.Request.Method, request.Request.URL)
+		log.Println("Message Received. Id:", request.ID, request.Request.Method, request.Request.URL)
 		log.Println("Body:", string(request.Request.Body))
 
 		response := http2amqp.AmqpResponseMessage{
-			Id: request.Id,
+			ID: request.ID,
 			Response: http2amqp.Response{
 				Body:   request.Request.Body,
 				Status: 200,
