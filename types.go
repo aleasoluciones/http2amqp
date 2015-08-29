@@ -9,6 +9,7 @@ import (
 	"net/url"
 )
 
+// Request http request info to publish to amqp broker
 type Request struct {
 	Method string      `json:"method"`
 	URL    *url.URL    `json:"url"`
@@ -16,6 +17,7 @@ type Request struct {
 	Body   []byte      `json:"body"`
 }
 
+// Response info to generate a http response to return to the original http client
 type Response struct {
 	Status int         `json:"status"`
 	Header http.Header `json:"header"`
