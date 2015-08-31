@@ -24,12 +24,14 @@ type Response struct {
 	Body   []byte      `json:"body"`
 }
 
+// AmqpRequestMessage wrapper type for a Request including a ID and the topic to use
 type AmqpRequestMessage struct {
 	ID            string  `json:"id"`
 	Request       Request `json:"request"`
 	ResponseTopic string  `json:"responseTopic"`
 }
 
+// AmqpResponseMessage wrapper type for a Response including a ID and the response
 type AmqpResponseMessage struct {
 	ID       string   `json:"id"`
 	Response Response `json:"response"`
