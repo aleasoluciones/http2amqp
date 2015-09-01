@@ -22,9 +22,9 @@ const (
 	responseTopic      = "queries.response"
 )
 
-func NewHTTP2AmqpService(brokerURI, exchange string, timeout time.Duration) *HTTP2amqpService {
+func NewService(brokerURI, exchange string, timeout time.Duration) *Service {
 
-	service := HTTP2amqpService{
+	service := Service{
 		amqpConsumer:   simpleamqp.NewAmqpConsumer(brokerURI),
 		amqpPublisher:  simpleamqp.NewAmqpPublisher(brokerURI, exchange),
 		idsRepository:  NewIdsRepository(),
@@ -43,7 +43,7 @@ func NewHTTP2AmqpService(brokerURI, exchange string, timeout time.Duration) *HTT
 	return &service
 }
 
-type HTTP2amqpService struct {
+type Service struct {
 	amqpConsumer   simpleamqp.AMQPConsumer
 	amqpPublisher  simpleamqp.AMQPPublisher
 	idsRepository  IdsRepository
@@ -52,7 +52,7 @@ type HTTP2amqpService struct {
 	queryResponses safemap.SafeMap
 }
 
-func (service *HTTP2amqpService) receiveResponses(amqpResponses chan simpleamqp.AmqpMessage) {
+func (service *Service) receiveResponses(amqpResponses chan simpleamqp.AmqpMessage) {
 	var deserialized AmqpResponseMessage
 	var value safemap.Value
 	var responses chan Response
@@ -69,7 +69,7 @@ func (service *HTTP2amqpService) receiveResponses(amqpResponses chan simpleamqp.
 	}
 }
 
-func (service *HTTP2amqpService) publishQuery(id string, topic string, request Request) {
+func (service *Service) publishQuery(id string, topic string, request Request) {
 	serialized, _ := json.Marshal(AmqpRequestMessage{
 		ID:            id,
 		Request:       request,
@@ -79,7 +79,7 @@ func (service *HTTP2amqpService) publishQuery(id string, topic string, request R
 	service.amqpPublisher.Publish(topic, serialized)
 }
 
-func (service *HTTP2amqpService) Query(topic string, request Request) (Response, error) {
+func (service *Service) Query(topic string, request Request) (Response, error) {
 	id := service.idsRepository.Next()
 	responses := make(chan Response)
 	service.queryResponses.Insert(id, responses)
