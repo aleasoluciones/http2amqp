@@ -27,7 +27,7 @@ func NewService(brokerURI, exchange string, timeout time.Duration) *Service {
 	service := Service{
 		amqpConsumer:   simpleamqp.NewAmqpConsumer(brokerURI),
 		amqpPublisher:  simpleamqp.NewAmqpPublisher(brokerURI, exchange),
-		idsRepository:  NewIdsRepository(),
+		idsGenerator:  NewUUIDIdsGenerator(),
 		exchange:       exchange,
 		queryTimeout:   timeout,
 		queryResponses: safemap.NewSafeMap(),
@@ -46,7 +46,7 @@ func NewService(brokerURI, exchange string, timeout time.Duration) *Service {
 type Service struct {
 	amqpConsumer   simpleamqp.AMQPConsumer
 	amqpPublisher  simpleamqp.AMQPPublisher
-	idsRepository  IdsRepository
+	idsGenerator  IdsGenerator
 	exchange       string
 	queryTimeout   time.Duration
 	queryResponses safemap.SafeMap
@@ -80,7 +80,7 @@ func (service *Service) publishQuery(id string, topic string, request Request) {
 }
 
 func (service *Service) Query(topic string, request Request) (Response, error) {
-	id := service.idsRepository.Next()
+	id := service.idsGenerator.Next()
 	responses := make(chan Response)
 	service.queryResponses.Insert(id, responses)
 	defer service.queryResponses.Delete(id)

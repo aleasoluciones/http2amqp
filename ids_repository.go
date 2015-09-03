@@ -8,17 +8,18 @@ import (
 	"code.google.com/p/go-uuid/uuid"
 )
 
-type IdsRepository interface {
+type IdsGenerator interface {
 	Next() string
 }
 
-func NewIdsRepository() IdsRepository {
-	return &idsRepository{}
+// NewUUIDIdsGenerator return a uuid
+func NewUUIDIdsGenerator() IdsGenerator {
+	return &uuidGenerator{}
 }
 
-type idsRepository struct {
+type uuidGenerator struct {
 }
 
-func (repo *idsRepository) Next() string {
+func (g *uuidGenerator) Next() string {
 	return string(uuid.New())
 }
