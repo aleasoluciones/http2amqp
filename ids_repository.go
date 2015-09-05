@@ -8,6 +8,7 @@ import (
 	"code.google.com/p/go-uuid/uuid"
 )
 
+// IdsGenerator generate a diferent ID each time Next is called
 type IdsGenerator interface {
 	Next() string
 }
