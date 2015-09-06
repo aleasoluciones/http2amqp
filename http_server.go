@@ -13,6 +13,7 @@ import (
 	"net/http"
 )
 
+// NewHTTPServerFunc return a function to process a http request
 func NewHTTPServerFunc(service *Service) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		topic := topicFor(r)

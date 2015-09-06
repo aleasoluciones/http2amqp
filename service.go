@@ -22,12 +22,14 @@ const (
 	responseTopic      = "queries.response"
 )
 
+// NewService return the http2amqp service. This service publish a amqp message for each http request
+// and process the corresponding amqp responses to answer to the original http request
 func NewService(brokerURI, exchange string, timeout time.Duration) *Service {
 
 	service := Service{
 		amqpConsumer:   simpleamqp.NewAmqpConsumer(brokerURI),
 		amqpPublisher:  simpleamqp.NewAmqpPublisher(brokerURI, exchange),
-		idsGenerator:  NewUUIDIdsGenerator(),
+		idsGenerator:   NewUUIDIdsGenerator(),
 		exchange:       exchange,
 		queryTimeout:   timeout,
 		queryResponses: safemap.NewSafeMap(),
@@ -46,7 +48,7 @@ func NewService(brokerURI, exchange string, timeout time.Duration) *Service {
 type Service struct {
 	amqpConsumer   simpleamqp.AMQPConsumer
 	amqpPublisher  simpleamqp.AMQPPublisher
-	idsGenerator  IdsGenerator
+	idsGenerator   IdsGenerator
 	exchange       string
 	queryTimeout   time.Duration
 	queryResponses safemap.SafeMap
