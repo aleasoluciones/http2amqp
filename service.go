@@ -45,6 +45,7 @@ func NewService(brokerURI, exchange string, timeout time.Duration) *Service {
 	return &service
 }
 
+// Service http2amqp service
 type Service struct {
 	amqpConsumer   simpleamqp.AMQPConsumer
 	amqpPublisher  simpleamqp.AMQPPublisher
@@ -81,7 +82,7 @@ func (service *Service) publishQuery(id string, topic string, request Request) {
 	service.amqpPublisher.Publish(topic, serialized)
 }
 
-func (service *Service) Query(topic string, request Request) (Response, error) {
+func (service *Service) DispatchHTTPRequest(topic string, request Request) (Response, error) {
 	id := service.idsGenerator.Next()
 	responses := make(chan Response)
 	service.queryResponses.Insert(id, responses)

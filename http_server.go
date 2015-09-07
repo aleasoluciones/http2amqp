@@ -32,7 +32,7 @@ func NewHTTPServerFunc(service *Service) func(w http.ResponseWriter, r *http.Req
 			return
 		}
 
-		response, err := service.Query(topic, request)
+		response, err := service.DispatchHTTPRequest(topic, request)
 
 		if err != nil {
 			newJSONError(w, err.Error(), 404)
