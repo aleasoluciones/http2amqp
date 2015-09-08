@@ -82,6 +82,8 @@ func (service *Service) publishQuery(id string, topic string, request Request) {
 	service.amqpPublisher.Publish(topic, serialized)
 }
 
+// DispatchHTTPRequest process a request. Send the request to the broker using the
+// given topic and wait for the response (or the timeout)
 func (service *Service) DispatchHTTPRequest(topic string, request Request) (Response, error) {
 	id := service.idsGenerator.Next()
 	responses := make(chan Response)
