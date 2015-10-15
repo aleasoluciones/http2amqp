@@ -7,7 +7,7 @@ case "$1" in
     "http2amqp")
         shift
         OPTIONS="$@"
-        exec /http2amqp ${OPTIONS}
+        exec /go/bin/http2amqp ${OPTIONS}
     ;;
 esac
 exec "$@"

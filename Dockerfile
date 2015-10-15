@@ -19,7 +19,7 @@ RUN mkdir $GOPATH/src/github.com/aleasoluciones/http2amqp
 COPY . $GOPATH/src/github.com/aleasoluciones/http2amqp
 RUN cd $GOPATH/src/github.com/aleasoluciones/http2amqp; make deps; make build
 RUN mkdir -pv /go/bin/
-RUN cp $GOPATH/src/github.com/aleasoluciones/http2amqp/http2amqp /http2amqp
+RUN cp $GOPATH/src/github.com/aleasoluciones/http2amqp/http2amqp /go/bin/http2amqp
 
 COPY docker-entrypoint.sh /
 
