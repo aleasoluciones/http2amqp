@@ -14,6 +14,7 @@ build:
 	go vet
 	go build .
 	go build -o http2amqp httpserver/http2amqp.go
-	go build -o echoservice examples/echoservice/echoservice.go
+	go build -a -installsuffix cgo httpserver/http2amqp.go -o http2amqp
+	go build -a -installsuffix cgo examples/echoservice/echoservice.go -o echoservice
 
 .PHONY: deps test
