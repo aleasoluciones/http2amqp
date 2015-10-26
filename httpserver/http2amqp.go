@@ -10,9 +10,13 @@ import (
 	"time"
 
 	"github.com/aleasoluciones/http2amqp"
+	alealog "github.com/aleasoluciones/goaleasoluciones/log"
 )
 
 func main() {
+	alealog.Init()
+	alealog.DisableLogging()
+
 	amqpuri := flag.String("amqpuri", localBrokerUri(), "AMQP connection uri")
 	address := flag.String("address", "0.0.0.0", "Listen address")
 	port := flag.String("port", "18080", "Listen port")
