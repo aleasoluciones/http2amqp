@@ -22,12 +22,11 @@ func main() {
 	amqpPublisher := simpleamqp.NewAmqpPublisher(*amqpuri, *exchange)
 	amqpConsumer := simpleamqp.NewAmqpConsumer(*amqpuri)
 
-	inMessages := amqpConsumer.Receive(
+	inMessages := amqpConsumer.ReceiveWithoutTimeout(
 		*exchange,
 		[]string{*topic},
 		"",
-		simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true},
-		5*60*time.Second)
+		simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true})
 
 	for inMessage := range inMessages {
 		log.Println("Message Received. Topic:", inMessage.RoutingKey)
