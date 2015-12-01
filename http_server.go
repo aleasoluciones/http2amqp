@@ -28,14 +28,14 @@ func NewHTTPServerFunc(service *Service) func(w http.ResponseWriter, r *http.Req
 		request.Body, err = ioutil.ReadAll(r.Body)
 		if err != nil {
 			log.Println("[http2amqp] Error reading body", err)
-			newJSONError(w, err.Error(), 400)
+			newJSONError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		response, err := service.DispatchHTTPRequest(topic, request)
 
 		if err != nil {
-			newJSONError(w, err.Error(), 404)
+			newJSONError(w, err.Error(), http.StatusRequestTimeout)
 			return
 		}
 
@@ -57,7 +57,7 @@ func newJSONError(w http.ResponseWriter, message string, status int) {
 
 	if err != nil {
 		log.Println("[http2amqp] Error marshaling error message", err)
-		http.Error(w, "Internal Server Error", 500)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
