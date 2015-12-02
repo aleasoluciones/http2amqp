@@ -1,3 +1,7 @@
+## [0.4.0] - 2015-12-02
+
+* return 408 error code when timeout happend
+
 ## [0.4.0] - 2015-08-11
 
 * Support a query string argument to especify a request timeout in milliseconds (e.g. curl http://localhost/foo?timeout=1500)
