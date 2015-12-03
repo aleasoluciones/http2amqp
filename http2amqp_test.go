@@ -38,7 +38,7 @@ func TestHttpTimeoutGetToEchoServer(t *testing.T) {
 	response, err := http.Get(ts.URL + "/test/timeout")
 
 	assert.Equal(t, err, nil)
-	assert.Equal(t, response.StatusCode, 404)
+	assert.Equal(t, response.StatusCode, 408)
 }
 
 func TestHttpSuccessfullPostToEchoServer(t *testing.T) {
