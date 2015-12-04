@@ -54,21 +54,20 @@ type Service struct {
 }
 
 func (service *Service) receiveResponses(amqpResponses chan simpleamqp.AmqpMessage) {
-	var deserialized AmqpResponseMessage
-	var value safemap.Value
-	var responses chan Response
-	var found bool
-
 	for message := range amqpResponses {
-		_ = json.Unmarshal([]byte(message.Body), &deserialized)
+		go func(message simpleamqp.AmqpMessage) {
+			var deserialized AmqpResponseMessage
 
-		log.Println("Response received", deserialized.ID)
-		value, found = service.queryResponses.Find(deserialized.ID)
-		if found {
-		   	log.Println("Pending request found for", deserialized.ID)
-			responses = value.(chan Response)
-			responses <- deserialized.Response
-		}
+			json.Unmarshal([]byte(message.Body), &deserialized)
+
+			log.Println("Response received", deserialized.ID)
+			value, found := service.queryResponses.Find(deserialized.ID)
+			if found {
+				log.Println("Pending request found for", deserialized.ID)
+				responses := value.(chan Response)
+				responses <- deserialized.Response
+			}
+		}(message)
 	}
 }
 
@@ -97,7 +96,7 @@ func (service *Service) DispatchHTTPRequest(topic string, request Request) (Resp
 			timeout = time.Duration(milliseconds) * time.Millisecond
 		}
 	}
-	log.Println("Request published", id)	
+	log.Println("Request published", id)
 	service.publishQuery(id, topic, request)
 
 	timeoutTicker := time.NewTicker(timeout)
