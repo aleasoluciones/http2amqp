@@ -62,10 +62,10 @@ func (service *Service) receiveResponses(amqpResponses chan simpleamqp.AmqpMessa
 	for message := range amqpResponses {
 		_ = json.Unmarshal([]byte(message.Body), &deserialized)
 
-		log.Println("Response received", deserialized.ID)
+		log.Println("Response received", deserialized)
 		value, found = service.queryResponses.Find(deserialized.ID)
 		if found {
-		   	log.Println("Pending request found for", deserialized.ID)
+			log.Println("Pending request found for", deserialized)
 			responses = value.(chan Response)
 			responses <- deserialized.Response
 		}
@@ -97,7 +97,7 @@ func (service *Service) DispatchHTTPRequest(topic string, request Request) (Resp
 			timeout = time.Duration(milliseconds) * time.Millisecond
 		}
 	}
-	log.Println("Request published", id)	
+	log.Println("Request published", id)
 	service.publishQuery(id, topic, request)
 
 	timeoutTicker := time.NewTicker(timeout)
