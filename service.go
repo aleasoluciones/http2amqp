@@ -60,6 +60,7 @@ func (service *Service) receiveResponses(amqpResponses chan simpleamqp.AmqpMessa
 	var found bool
 
 	for message := range amqpResponses {
+		log.Println("Raw amqp response:", message)
 		_ = json.Unmarshal([]byte(message.Body), &deserialized)
 
 		log.Println("Response received", deserialized)
