@@ -61,7 +61,12 @@ func (service *Service) receiveResponses(amqpResponses chan simpleamqp.AmqpMessa
 
 	for message := range amqpResponses {
 		log.Println("Raw amqp response:", message)
-		_ = json.Unmarshal([]byte(message.Body), &deserialized)
+		err := json.Unmarshal([]byte(message.Body), &deserialized)
+
+		if err != nil {
+			log.Println("Error unmarshaling json response:", err)
+			continue
+		}
 
 		log.Println("Response received", deserialized)
 		value, found = service.queryResponses.Find(deserialized.ID)
