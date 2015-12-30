@@ -39,8 +39,6 @@ func NewHTTPServerFunc(service *Service) func(w http.ResponseWriter, r *http.Req
 			return
 		}
 
-		log.Println("HTTP Response:", response.Body)
-
 		for header := range response.Header {
 			w.Header().Set(header, response.Header.Get(header))
 		}
