@@ -1,3 +1,7 @@
+## [0.4.1] - 2015-12-30
+
+* Bugfix: ignore messages that can not be deserialized.
+
 ## [0.4.0] - 2015-12-02
 
 * return 408 error code when timeout happend
