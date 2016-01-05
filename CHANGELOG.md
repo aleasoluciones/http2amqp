@@ -4,7 +4,7 @@
 
 ## [0.4.0] - 2015-12-02
 
-* return 408 error code when timeout happend
+* return 408 error code when timeout happens
 
 ## [0.4.0] - 2015-08-11
 
