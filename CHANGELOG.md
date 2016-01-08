@@ -1,3 +1,7 @@
+## [0.4.2] - 2016-01-XX
+
+* Publish queries with the timeout value as amqp message ttl so messages are expired after timeout
+
 ## [0.4.1] - 2015-12-30
 
 * Bugfix: ignore messages that can not be deserialized.
