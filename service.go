@@ -77,14 +77,18 @@ func (service *Service) receiveResponses(amqpResponses chan simpleamqp.AmqpMessa
 	}
 }
 
-func (service *Service) publishQuery(id string, topic string, request Request) {
+func (service *Service) publishQuery(id string, topic string, request Request, ttl time.Duration) {
 	serialized, _ := json.Marshal(AmqpRequestMessage{
 		ID:            id,
 		Request:       request,
 		ResponseTopic: responseTopic,
 	})
-	log.Println("[queries_service] Query id:", id, "topic:", topic, "request:", request)
-	service.amqpPublisher.Publish(topic, serialized)
+	log.Println("[queries_service] Query id:", id, "topic:", topic, "request:", request, "ttl:", ttl)
+	service.amqpPublisher.PublishWithTTL(topic, serialized, durationToMilliseconds(ttl))
+}
+
+func durationToMilliseconds(value time.Duration) int {
+	return int(value.Nanoseconds() / 1000000)
 }
 
 // DispatchHTTPRequest process a request. Send the request to the broker using the
@@ -102,8 +106,9 @@ func (service *Service) DispatchHTTPRequest(topic string, request Request) (Resp
 			timeout = time.Duration(milliseconds) * time.Millisecond
 		}
 	}
+
+	service.publishQuery(id, topic, request, timeout)
 	log.Println("Request published", id)
-	service.publishQuery(id, topic, request)
 
 	timeoutTicker := time.NewTicker(timeout)
 	defer timeoutTicker.Stop()
