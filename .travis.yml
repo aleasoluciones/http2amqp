@@ -3,6 +3,9 @@ go:
   - 1.4
   - 1.5
 
+env:
+  - BROKER_URI=amqp://guest:guest@localhost/
+
 before_install:
   - go get -u github.com/golang/lint/golint
 
