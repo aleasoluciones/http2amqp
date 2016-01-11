@@ -1,4 +1,4 @@
-## [0.4.2] - 2016-01-XX
+## [0.4.2] - 2016-01-11
 
 * Publish queries with the timeout value as amqp message ttl so messages are expired after timeout
 
