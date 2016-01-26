@@ -5,7 +5,7 @@
 package http2amqp
 
 import (
-	"code.google.com/p/go-uuid/uuid"
+	"github.com/pborman/uuid"
 )
 
 // IdsGenerator generate a diferent ID each time Next is called
