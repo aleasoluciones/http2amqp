@@ -60,6 +60,7 @@ func (service *Service) receiveResponses(amqpResponses chan simpleamqp.AmqpMessa
 	var found bool
 
 	for message := range amqpResponses {
+		log.Println("Response received")
 		err := json.Unmarshal([]byte(message.Body), &deserialized)
 
 		if err != nil {
@@ -67,7 +68,7 @@ func (service *Service) receiveResponses(amqpResponses chan simpleamqp.AmqpMessa
 			continue
 		}
 
-		log.Println("Response received", deserialized.ID)
+		log.Println("Response received ID:", deserialized.ID)
 		value, found = service.queryResponses.Find(deserialized.ID)
 		if found {
 			log.Println("Pending request found for", deserialized.ID)
