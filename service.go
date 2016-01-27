@@ -25,20 +25,19 @@ const (
 // and process the corresponding amqp responses to answer to the original http request
 func NewService(brokerURI, exchange string, timeout time.Duration) *Service {
 
+	consumer := simpleamqp.NewAmqpConsumer(brokerURI)
+
 	service := Service{
-		amqpConsumer:   simpleamqp.NewAmqpConsumer(brokerURI),
+		amqpConsumer:   consumer,
 		amqpPublisher:  simpleamqp.NewAmqpPublisher(brokerURI, exchange),
 		idsGenerator:   NewUUIDIdsGenerator(),
 		exchange:       exchange,
 		queryTimeout:   timeout,
 		queryResponses: safemap.NewSafeMap(),
+		amqpResponses:  consumer.ReceiveWithoutTimeout(exchange, []string{responseTopic}, responsesQueue, simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true}),
 	}
 
-	go service.receiveResponses(service.amqpConsumer.ReceiveWithoutTimeout(
-		service.exchange,
-		[]string{responseTopic},
-		responsesQueue,
-		simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true}))
+	go service.receiveResponses()
 
 	return &service
 }
@@ -51,15 +50,16 @@ type Service struct {
 	exchange       string
 	queryTimeout   time.Duration
 	queryResponses safemap.SafeMap
+	amqpResponses  chan simpleamqp.AmqpMessage
 }
 
-func (service *Service) receiveResponses(amqpResponses chan simpleamqp.AmqpMessage) {
+func (service *Service) receiveResponses() {
 	var deserialized AmqpResponseMessage
 	var value safemap.Value
 	var responses chan Response
 	var found bool
 
-	for message := range amqpResponses {
+	for message := range service.amqpResponses {
 		log.Println("Response received")
 		err := json.Unmarshal([]byte(message.Body), &deserialized)
 
@@ -119,6 +119,7 @@ func (service *Service) DispatchHTTPRequest(topic string, request Request) (Resp
 	case response := <-responses:
 		return response, nil
 	case <-afterTimeout:
+		log.Println("[response channel] :", service.amqpResponses)
 		log.Println("[queries_service] Timeout for query id:", id)
 		return Response{}, errors.New("Timeout")
 	}
