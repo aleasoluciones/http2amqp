@@ -33,7 +33,7 @@ func main() {
 
 	go func() {
 		// HTTP server used to remote profiling
-		http.ListenAndServe("127.0.0.1:16060", nil)
+		http.ListenAndServe("0.0.0.0:16060", nil)
 	}()
 
 	amqpuri := flag.String("amqpuri", localBrokerUri(), "AMQP connection uri")
