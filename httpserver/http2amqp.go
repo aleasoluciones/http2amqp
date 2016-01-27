@@ -7,15 +7,34 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"os/signal"
+	"runtime/pprof"
+	"syscall"
 	"time"
 
-	"github.com/aleasoluciones/http2amqp"
 	alealog "github.com/aleasoluciones/goaleasoluciones/log"
+	"github.com/aleasoluciones/http2amqp"
 )
+
+func init() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGHUP)
+
+	go func() {
+		for _ = range c {
+			pprof.Lookup("goroutine").WriteTo(os.Stdout, 1)
+		}
+	}()
+}
 
 func main() {
 	alealog.Init()
 	alealog.DisableLogging()
+
+	go func() {
+		// HTTP server used to remote profiling
+		http.ListenAndServe("127.0.0.1:16060", nil)
+	}()
 
 	amqpuri := flag.String("amqpuri", localBrokerUri(), "AMQP connection uri")
 	address := flag.String("address", "0.0.0.0", "Listen address")
