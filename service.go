@@ -76,6 +76,7 @@ func (service *Service) receiveResponses() {
 			responses <- deserialized.Response
 		}
 	}
+        log.Println("Nunca deberia pasar")
 }
 
 func (service *Service) publishQuery(id string, topic string, request Request, ttl time.Duration) {
