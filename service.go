@@ -98,6 +98,9 @@ func durationToMilliseconds(value time.Duration) int {
 func (service *Service) DispatchHTTPRequest(topic string, request Request) (Response, error) {
 	id := service.idsGenerator.Next()
 	responses := make(chan Response)
+
+	log.Println("[DispatchHTTPRequest] reponsesChannel created:", responses)
+
 	service.queryResponses.Insert(id, responses)
 	defer service.queryResponses.Delete(id)
 
