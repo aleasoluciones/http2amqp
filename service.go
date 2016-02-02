@@ -76,7 +76,7 @@ func (service *Service) receiveResponses() {
 			responses <- deserialized.Response
 		}
 	}
-        log.Println("Nunca deberia pasar")
+	log.Println("This trace never should be printed")
 }
 
 func (service *Service) publishQuery(id string, topic string, request Request, ttl time.Duration) {
