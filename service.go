@@ -72,8 +72,12 @@ func (service *Service) receiveResponses() {
 		value, found = service.queryResponses.Find(deserialized.ID)
 		if found {
 			log.Println("Pending request found for", deserialized.ID)
+
 			responses = value.(chan Response)
+			log.Println("Channel to response founded: ", responses)
+			log.Println("PRE publish to response channel")
 			responses <- deserialized.Response
+			log.Println("POST publish to response channel")
 		}
 	}
 	log.Println("This trace never should be printed")
