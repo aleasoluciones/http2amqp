@@ -76,8 +76,13 @@ func (service *Service) receiveResponses() {
 			responses = value.(chan Response)
 			log.Println("Channel to response founded: ", responses)
 			log.Println("PRE publish to response channel")
-			responses <- deserialized.Response
-			log.Println("POST publish to response channel")
+
+			select {
+			case responses <- deserialized.Response
+				log.Println("POST publish to response channel")
+			case defaut:
+				log.Println("POST publish to response channel with Select->Default")
+			}
 		}
 	}
 	log.Println("This trace never should be printed")
