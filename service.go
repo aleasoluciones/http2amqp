@@ -78,9 +78,9 @@ func (service *Service) receiveResponses() {
 			log.Println("PRE publish to response channel")
 
 			select {
-			case responses <- deserialized.Response
+			case responses <- deserialized.Response:
 				log.Println("POST publish to response channel")
-			case defaut:
+			default:
 				log.Println("POST publish to response channel with Select->Default")
 			}
 		}
