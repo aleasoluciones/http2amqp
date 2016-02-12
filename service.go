@@ -60,32 +60,28 @@ func (service *Service) receiveResponses() {
 	var found bool
 
 	for message := range service.amqpResponses {
-		log.Println("Response received")
+		log.Println("[receiveResponses] Response received")
 		err := json.Unmarshal([]byte(message.Body), &deserialized)
 
 		if err != nil {
-			log.Println("Error unmarshaling json response:", err)
+			log.Println("[receiveResponses] Error unmarshaling json response:", err)
 			continue
 		}
 
-		log.Println("Response received ID:", deserialized.ID)
+		log.Println("[receiveResponses] Response received ID:", deserialized.ID)
 		value, found = service.queryResponses.Find(deserialized.ID)
 		if found {
-			log.Println("Pending request found for", deserialized.ID)
+			log.Println("[receiveResponses] Pending request found for", deserialized.ID)
 
 			responses = value.(chan Response)
-			log.Println("Channel to response founded: ", responses)
-			log.Println("PRE publish to response channel")
-
 			select {
 			case responses <- deserialized.Response:
-				log.Println("POST publish to response channel")
+				log.Println("[receiveResponses] Publish to response channel")
 			default:
-				log.Println("POST publish to response channel with Select->Default")
+				log.Println("[receiveResponses] Publish to response channel with Select->Default")
 			}
 		}
 	}
-	log.Println("This trace never should be printed")
 }
 
 func (service *Service) publishQuery(id string, topic string, request Request, ttl time.Duration) {
@@ -122,7 +118,7 @@ func (service *Service) DispatchHTTPRequest(topic string, request Request) (Resp
 	}
 
 	service.publishQuery(id, topic, request, timeout)
-	log.Println("Request published", id)
+	log.Println("[DispatchHTTPRequest] Request published", id)
 
 	timeoutTicker := time.NewTicker(timeout)
 	defer timeoutTicker.Stop()
@@ -132,8 +128,8 @@ func (service *Service) DispatchHTTPRequest(topic string, request Request) (Resp
 	case response := <-responses:
 		return response, nil
 	case <-afterTimeout:
-		log.Println("[response channel] :", service.amqpResponses)
-		log.Println("[queries_service] Timeout for query id:", id)
+		log.Println("[DispatchHTTPRequest] [response channel] :", service.amqpResponses)
+		log.Println("[DispatchHTTPRequest] [queries_service] Timeout for query id:", id)
 		return Response{}, errors.New("Timeout")
 	}
 }
