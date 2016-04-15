@@ -3,6 +3,7 @@ all: deps build test
 deps:
 	go get -t -v ./...
 	go get github.com/stretchr/testify/assert
+	go get -u github.com/golang/lint/golint
 
 test:
 	- pkill -f echoservice
@@ -11,7 +12,8 @@ test:
 	- pkill -f echoservice
 
 build:
-	go vet
+	golint ./...
+	go vet ./...
 	go build .
 	go build -a -installsuffix cgo -o http2amqp httpserver/http2amqp.go
 	go build -a -installsuffix cgo  -o echoservice examples/echoservice/echoservice.go
