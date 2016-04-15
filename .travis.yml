@@ -19,6 +19,6 @@ services:
 
 script:
   - make test
-  - go vet ./..
+  - go vet
   - golint ./..
 
