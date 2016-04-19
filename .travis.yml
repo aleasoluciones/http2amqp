@@ -4,21 +4,13 @@ go:
   - 1.6
   - tip
 
+sudo: false
+
 env:
   - BROKER_URI=amqp://guest:guest@localhost/
-
-before_install:
-  - go get -u github.com/golang/lint/golint
-
-install:
-  - make deps
-  - make build
 
 services:
   - rabbitmq
 
 script:
-  - make test
-  - go vet
-  - golint ./..
-
+  - make all
