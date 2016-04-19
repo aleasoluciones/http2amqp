@@ -1,3 +1,7 @@
+## [0.4.2] - 2016-04-19
+
+* Internal: Unify Makefile and travis.yml
+
 ## [0.4.2] - 2016-01-11
 
 * Publish queries with the timeout value as amqp message ttl so messages are expired after timeout
