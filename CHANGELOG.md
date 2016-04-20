@@ -1,3 +1,7 @@
+## [0.4.2] - 2016-04-20
+
+* Update deprecated docker compose configuration syslog-tag
+
 ## [0.4.2] - 2016-04-19
 
 * Internal: Unify Makefile and travis.yml
