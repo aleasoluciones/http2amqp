@@ -1,6 +1,10 @@
-## [0.4.2] - 2016-10-24
+## [0.4.3] - 2016-10-24
 
 * Use manual prefix "docker/" for docker_log_tag.It's necessary for docker v1.12
+* Update go version to 1.6.3
+* Travis configuration uses 1.6 1.7 and tip
+* golint is not supported in go version 1.5
+* Remove update_deps doesnt work correctly :-(
 
 ## [0.4.2] - 2016-04-20
 
