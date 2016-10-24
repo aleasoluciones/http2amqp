@@ -1,3 +1,7 @@
+## [0.4.2] - 2016-10-24
+
+* Use manual prefix "docker/" for docker_log_tag.It's necessary for docker v1.12
+
 ## [0.4.2] - 2016-04-20
 
 * Update deprecated docker compose configuration syslog-tag
