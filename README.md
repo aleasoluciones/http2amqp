@@ -2,6 +2,17 @@
 
 [![Build Status](https://travis-ci.org/aleasoluciones/http2amqp.svg)](https://travis-ci.org/aleasoluciones/http2amqp)
 
+##Disclaimer
+Any documentation is obsolete from the very moment it is written down, so mistrust it and check it still applies.
+
+##Features
+* It publishes an amqp message for each http request received and process the corresponding amqp responses (it waits for it) in order to answer to the original http request.
+* The topic of the message it publishes comes from the URL Path of the HTTP request, using the HTTP method, network and the path replacing '/' with '.'
+  * E.g.: 'get.arl.cpe'
+* The TTL for the messages published is 1000 ms
+* The exchange used by default is 'events'
+
+
 ## Usage
 ```
 $ ./http2amqp --help
