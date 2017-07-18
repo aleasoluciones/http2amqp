@@ -2,16 +2,39 @@
 
 [![Build Status](https://travis-ci.org/aleasoluciones/http2amqp.svg)](https://travis-ci.org/aleasoluciones/http2amqp)
 
-##Disclaimer
+## Disclaimer
 Any documentation is obsolete from the very moment it is written down, so mistrust it and check it still applies.
 
-##Features
+## Features
 * It publishes an amqp message for each http request received and process the corresponding amqp responses (it waits for it) in order to answer to the original http request.
 * The topic of the message it publishes comes from the URL Path of the HTTP request, using the HTTP method, network and the path replacing '/' with '.'
   * E.g.: 'get.arl.cpe'
 * The TTL for the messages published is 1000 ms
 * The exchange used by default is 'events'
 
+
+## Build 
+A Makefile is available so you only need to run 
+```
+make
+```
+
+## Running tests
+Makefile has a test section for running tests.
+```
+make test
+```
+
+You should use BROKER_URI env for setting your custom rabbitmq values
+
+BROKER_URI="amqp://guest:guest@localhost/" make test
+
+## Building docker image
+Also there is a script for building a docker image 
+
+```
+./build.sh
+```
 
 ## Usage
 ```
@@ -22,6 +45,7 @@ Usage of ./http2amqp:
   -exchange="events": AMQP exchange name
   -port="18080": Listen port
   -timeout=1000: Queries timeout in milliseconds
+  -verbose :Enable logging, false by default
 ```
 
 ## Execution example
