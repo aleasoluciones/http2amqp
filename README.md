@@ -48,6 +48,14 @@ Usage of ./http2amqp:
   -verbose :Enable logging, false by default
 ```
 
+## Debugging
+
+Running the container with verbose mode to debugg whats happening
+
+```
+ docker-compose -f docker-compose.yml run http2amqp -verbose
+```
+
 ## Execution example
 With a rabbitmq running with the default credentials...
 
