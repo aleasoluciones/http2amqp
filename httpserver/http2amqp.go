@@ -27,6 +27,7 @@ func main() {
 
   if *verbose {
     alealog.EnableLogging()
+	  log.Println("[http2amqp] verbose mode enabled")
   }
 
 	service := http2amqp.NewService(*amqpuri, *exchange, time.Duration(*timeout)*time.Millisecond)
