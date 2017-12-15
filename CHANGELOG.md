@@ -1,3 +1,6 @@
+## [0.4.4] - 2017-12-15
+* Internal: Removed go version 1.6 and 1.7. Added 1.8.x, 1.9.x and master versions
+
 ## [0.4.3] - 2016-10-24
 
 * Use manual prefix "docker/" for docker_log_tag.It's necessary for docker v1.12
