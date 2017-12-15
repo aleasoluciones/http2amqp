@@ -20,6 +20,8 @@ make
 ```
 
 ## Running tests
+Before running test, ensure you have to ```make build``` to generate *echoservice* executable
+
 Makefile has a test section for running tests.
 ```
 make test
