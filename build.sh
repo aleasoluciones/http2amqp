@@ -2,7 +2,7 @@
 set -e
 
 SRC_DIR=/go/src/github.com/aleasoluciones/http2amqp
-GO_VERSION=1.6.3
+GO_VERSION=1.9.2
 
 # We need a temp dir to mount to the build process 
 # because when using this script from docker, the 
