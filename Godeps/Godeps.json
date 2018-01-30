@@ -1,0 +1,39 @@
+{
+	"ImportPath": "github.com/aleasoluciones/http2amqp",
+	"GoVersion": "go1.9",
+	"GodepVersion": "v79",
+	"Deps": [
+		{
+			"ImportPath": "github.com/aleasoluciones/goaleasoluciones/safemap",
+			"Rev": "17fbb1e0731dd5d72694f7b89d30a01680e131c1"
+		},
+		{
+			"ImportPath": "github.com/aleasoluciones/simpleamqp",
+			"Rev": "d6639f7df6d21886ee92ac3f5daa55b5a749ac0b"
+		},
+		{
+			"ImportPath": "github.com/davecgh/go-spew/spew",
+			"Comment": "v1.1.0-9-gecdeabc",
+			"Rev": "ecdeabc65495df2dec95d7c4a4c3e021903035e5"
+		},
+		{
+			"ImportPath": "github.com/pborman/uuid",
+			"Comment": "v1.1",
+			"Rev": "e790cca94e6cc75c7064b1332e63811d4aae1a53"
+		},
+		{
+			"ImportPath": "github.com/pmezard/go-difflib/difflib",
+			"Comment": "v1.0.0",
+			"Rev": "792786c7400a136282c1664665ae0a8db921c6c2"
+		},
+		{
+			"ImportPath": "github.com/streadway/amqp",
+			"Rev": "27859d32540aebd2e5befa52dc59ae8e6a0132b6"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Comment": "v1.1.4-72-g2aa2c17",
+			"Rev": "2aa2c176b9dab406a6970f6a55f513e8a8c8b18f"
+		}
+	]
+}

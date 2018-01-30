@@ -32,3 +32,7 @@ _testmain.go
 
 ### executable ###
 http2amqp
+echoservice
+
+# Exclude vendor directory (godep dependency manager tool)
+vendor
