@@ -2,7 +2,14 @@
 	"ImportPath": "github.com/aleasoluciones/http2amqp",
 	"GoVersion": "go1.9",
 	"GodepVersion": "v79",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
+		{
+			"ImportPath": "github.com/aleasoluciones/goaleasoluciones/log",
+			"Rev": "17fbb1e0731dd5d72694f7b89d30a01680e131c1"
+		},
 		{
 			"ImportPath": "github.com/aleasoluciones/goaleasoluciones/safemap",
 			"Rev": "17fbb1e0731dd5d72694f7b89d30a01680e131c1"
@@ -12,9 +19,18 @@
 			"Rev": "d6639f7df6d21886ee92ac3f5daa55b5a749ac0b"
 		},
 		{
+			"ImportPath": "github.com/certifi/gocertifi",
+			"Comment": "2017.04.17",
+			"Rev": "a9c833d2837d3b16888d55d5aafa9ffe9afb22b0"
+		},
+		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
 			"Comment": "v1.1.0-9-gecdeabc",
 			"Rev": "ecdeabc65495df2dec95d7c4a4c3e021903035e5"
+		},
+		{
+			"ImportPath": "github.com/getsentry/raven-go",
+			"Rev": "d175f85701dfbf44cb0510114c9943e665e60907"
 		},
 		{
 			"ImportPath": "github.com/pborman/uuid",
