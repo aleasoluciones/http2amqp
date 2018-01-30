@@ -1,3 +1,10 @@
+## [0.4.5] - 2018-01-30
+* Internal: Added godep for dependency management
+            - Updated Makefile
+            - Excluded vendor directory from git
+            - Updated .travis
+            - Updated dependencies
+
 ## [0.4.4] - 2017-12-15
 * Internal: Removed go version 1.6 and 1.7. Added 1.8.x, 1.9.x and master versions
 
