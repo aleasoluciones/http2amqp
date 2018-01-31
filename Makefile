@@ -1,6 +1,8 @@
 all: clean build test
 
-jenkins: install_dep_tool install_go_linter production_restore_deps clean build test
+travis: install_dep_tool install_go_linter production_restore_deps clean build test
+
+jenkins: install_dep_tool install_go_linter production_restore_deps clean build
 
 install_dep_tool:
 	go get github.com/tools/godep
@@ -39,4 +41,4 @@ clean:
 production_restore_deps:
 	godep restore
 
-.PHONY: deps update_deps test build
+.PHONY: all travis jenkins install_dep_tool install_go_linter initialize_deps update_deps test build clean production_restore_deps

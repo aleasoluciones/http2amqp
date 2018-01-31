@@ -13,4 +13,4 @@ services:
   - rabbitmq
 
 script:
-  - make jenkins
+  - make travis
