@@ -14,3 +14,7 @@ services:
 
 script:
   - make travis
+
+notifications:
+  email:
+  - bifer@alea-soluciones.com
