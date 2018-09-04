@@ -13,8 +13,8 @@ Any documentation is obsolete from the very moment it is written down, so mistru
 * The exchange used by default is 'events'
 
 
-## Build 
-A Makefile is available so you only need to run 
+## Build
+A Makefile is available so you only need to run
 ```
 make
 ```
@@ -32,7 +32,7 @@ You should use BROKER_URI env for setting your custom rabbitmq values
 BROKER_URI="amqp://guest:guest@localhost/" make test
 
 ## Building docker image
-Also there is a script for building a docker image 
+Also there is a script for building a docker image
 
 ```
 ./build.sh
@@ -84,4 +84,5 @@ curl -X GET http://localhost:18080/test?timeout=200 -d 'hello world'
 ## TODO
  - test timeout parameter for each request
  - implement delay parameter for echo server to allow tests timeouts
+
 
