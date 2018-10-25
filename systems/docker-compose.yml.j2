@@ -2,15 +2,13 @@
   image: aleasoluciones/{{ component }}:{{ gitrevision }}
   restart: always
   command: {{ component }}
+  net: host
   hostname: {{ inventory_hostname}}-{{ component }}
   environment:
     - BROKER_URI={{ inv_net_broker_uri }}
   volumes:
     - {{ docker_compose_data }}/{{ component }}:/data
     - /etc/localtime:/etc/localtime:ro
-  ports:
-    - "18080:18080"
-    - "16060:16060"
   log_driver: "syslog"
   log_opt:
     tag: "docker/{{ component }}"

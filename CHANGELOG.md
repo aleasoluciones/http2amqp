@@ -1,3 +1,6 @@
+## [0.4.6] - 2018-10-25
+* Systems: Use network host mode
+
 ## [0.4.5] - 2018-01-30
 * Internal: Added godep for dependency management
             - Updated Makefile
