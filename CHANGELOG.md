@@ -2,6 +2,7 @@
 * Internal: Update go version 1.10 and 1.11
 * Internal: Update godep version
 * Internal: Update Makefile and dependencies
+* Internal: Update go version for docker image
 
 ## [0.4.6] - 2018-10-25
 * Systems: Use network host mode
