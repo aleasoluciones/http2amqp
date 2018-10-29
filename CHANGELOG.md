@@ -1,3 +1,8 @@
+## [0.4.7] - 2018-10-29
+* Internal: Update go version 1.10 and 1.11
+* Internal: Update godep version
+* Internal: Update Makefile and dependencies
+
 ## [0.4.6] - 2018-10-25
 * Systems: Use network host mode
 
