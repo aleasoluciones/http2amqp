@@ -1,3 +1,6 @@
+## [0.4.8] - 2019-02-22
+* Port is parameterized
+
 ## [0.4.7] - 2018-10-29
 * Internal: Update go version 1.10 and 1.11
 * Internal: Update godep version

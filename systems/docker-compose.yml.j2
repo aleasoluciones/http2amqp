@@ -6,6 +6,7 @@
   hostname: {{ inventory_hostname}}-{{ component }}
   environment:
     - BROKER_URI={{ inv_net_broker_uri }}
+    - PORT=18080
   volumes:
     - {{ docker_compose_data }}/{{ component }}:/data
     - /etc/localtime:/etc/localtime:ro
