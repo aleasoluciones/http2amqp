@@ -17,6 +17,11 @@ addons:
     packages:
     - rabbitmq-server
 
+# safelist branch to build
+branches:
+  only:
+    - master
+
 script:
   - make travis
 
