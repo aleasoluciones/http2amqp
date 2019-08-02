@@ -85,4 +85,3 @@ curl -X GET http://localhost:18080/test?timeout=200 -d 'hello world'
  - test timeout parameter for each request
  - implement delay parameter for echo server to allow tests timeouts
 
-
