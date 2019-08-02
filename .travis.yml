@@ -12,6 +12,11 @@ env:
 services:
   - rabbitmq
 
+addons:
+  apt:
+    packages:
+    - rabbitmq-server
+
 script:
   - make travis
 
