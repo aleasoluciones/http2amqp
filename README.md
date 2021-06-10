@@ -1,6 +1,6 @@
 # http2amqp
 
-[![Build Status](https://travis-ci.org/aleasoluciones/http2amqp.svg)](https://travis-ci.org/aleasoluciones/http2amqp)
+[![Build Status](https://travis-ci.com/aleasoluciones/http2amqp.svg)](https://travis-ci.com/aleasoluciones/http2amqp)
 
 ## Disclaimer
 Any documentation is obsolete from the very moment it is written down, so mistrust it and check it still applies.
