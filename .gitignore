@@ -25,6 +25,7 @@ _testmain.go
 
 ### vim ###
 .*.sw[po]
+tags
 
 ### Intellij ###
 .idea/
