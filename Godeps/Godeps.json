@@ -16,7 +16,7 @@
 		},
 		{
 			"ImportPath": "github.com/aleasoluciones/simpleamqp",
-			"Rev": "d6639f7df6d21886ee92ac3f5daa55b5a749ac0b"
+			"Rev": "652142b668afe6e4d0711ab93f9e2843ff31b0f9"
 		},
 		{
 			"ImportPath": "github.com/certifi/gocertifi",
