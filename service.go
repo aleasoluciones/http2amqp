@@ -37,6 +37,11 @@ func NewService(brokerURI, exchange string, timeout time.Duration) *Service {
 		amqpResponses:  consumer.ReceiveWithoutTimeout(exchange, []string{responseTopic}, responsesQueue, simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true}),
 	}
 
+	// Sleep to allow the consumer.Receive to connect to rabbitmq
+	// Yeap, a race condition. It shows in the tests. This would
+	// need a fancy refactor to allow to handle this correctly
+	time.Sleep(7 * time.Second)
+
 	go service.receiveResponses()
 
 	return &service
