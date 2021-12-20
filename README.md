@@ -72,9 +72,23 @@ Running the container with verbose mode to debugg whats happening
 ## Execution example
 With a rabbitmq running with the default credentials...
 
+```
+docker run --rm -d --name http2amqp-rabbit -p5672:5672 rabbitmq:3
+```
+
 Start the htt2amqp server in a terminal
 ```
 ./http2amqp
+```
+
+Use `HTTP2AMPQ_VERBOSE` env to enable verbose mode
+```
+HTTP2AMPQ_VERBOSE=y ./http2amqp
+```
+Also can use the argument `-v`
+
+```
+./http2amqp -v
 ```
 
 Start in another terminal the echo service

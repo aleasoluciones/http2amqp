@@ -7,6 +7,7 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"strings"
 	"time"
 
 	alealog "github.com/aleasoluciones/goaleasoluciones/log"
@@ -16,8 +17,9 @@ import (
 func main() {
 	alealog.Init()
 	alealog.DisableLogging()
+	defaultVerbose := verboseMode()
 
-	verbose := flag.Bool("verbose", false, "Verbose mode, enable logging")
+	verbose := flag.Bool("verbose", defaultVerbose, "Verbose mode, enable logging")
 	amqpuri := flag.String("amqpuri", localBrokerUri(), "AMQP connection uri")
 	address := flag.String("address", "0.0.0.0", "Listen address")
 	port := flag.String("port", http2amqpPort(), "Listen port")
@@ -25,10 +27,10 @@ func main() {
 	timeout := flag.Int("timeout", 1000, "Queries timeout in milliseconds")
 	flag.Parse()
 
-  if *verbose {
-    alealog.EnableLogging()
-	  log.Println("[http2amqp] verbose mode enabled")
-  }
+	if *verbose {
+		alealog.EnableLogging()
+		log.Println("[http2amqp] verbose mode enabled")
+	}
 
 	service := http2amqp.NewService(*amqpuri, *exchange, time.Duration(*timeout)*time.Millisecond)
 
@@ -56,4 +58,21 @@ func localBrokerUri() string {
 	}
 
 	return brokerUri
+}
+
+func isTrue(value string) bool {
+	value = strings.ToLower(value)
+	trulies := []string{"1", "y", "yes", "on"}
+
+	for _, truly := range trulies {
+		if value == truly {
+			return true
+		}
+	}
+	return false
+}
+
+func verboseMode() bool {
+	verbose := os.Getenv("HTTP2AMQP_VERBOSE")
+	return isTrue(verbose)
 }
