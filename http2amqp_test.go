@@ -23,6 +23,9 @@ func TestHttpSuccessfullGetToEchoServer(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(NewHTTPServerFunc(service)))
 	defer ts.Close()
 
+	// Sleep to allow the consumer.Receive to connect to rabbitmq
+	time.Sleep(5 * time.Second)
+
 	response, err := http.Get(ts.URL + "/test/ok")
 
 	assert.Equal(t, err, nil)
@@ -35,6 +38,8 @@ func TestHttpTimeoutGetToEchoServer(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(NewHTTPServerFunc(service)))
 	defer ts.Close()
 
+	// Sleep to allow the consumer.Receive to connect to rabbitmq
+	time.Sleep(5 * time.Second)
 	response, err := http.Get(ts.URL + "/test/timeout")
 
 	assert.Equal(t, err, nil)
@@ -47,6 +52,8 @@ func TestHttpSuccessfullPostToEchoServer(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(NewHTTPServerFunc(service)))
 	defer ts.Close()
 
+	// Sleep to allow the consumer.Receive to connect to rabbitmq
+	time.Sleep(5 * time.Second)
 	response, err := http.PostForm(ts.URL+"/test/ok", url.Values{"key": {"Value"}, "id": {"123"}})
 
 	assert.Equal(t, err, nil)
