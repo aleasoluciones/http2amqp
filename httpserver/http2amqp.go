@@ -21,8 +21,8 @@ func main() {
 
 	verbose := flag.Bool("verbose", defaultVerbose, "Verbose mode, enable logging")
 	amqpuri := flag.String("amqpuri", localBrokerUri(), "AMQP connection uri")
-	address := flag.String("address", "0.0.0.0", "Listen address")
-	port := flag.String("port", http2amqpPort(), "Listen port")
+	HTTPAddress := flag.String("address", defaultHTTPAddress(), "Listen address")
+	HTTPPort := flag.String("port", defaultHTTPPort(), "Listen port")
 	exchange := flag.String("exchange", "events", "AMQP exchange name")
 	timeout := flag.Int("timeout", 1000, "Queries timeout in milliseconds")
 	flag.Parse()
@@ -35,12 +35,12 @@ func main() {
 	service := http2amqp.NewService(*amqpuri, *exchange, time.Duration(*timeout)*time.Millisecond)
 
 	http.HandleFunc("/", http2amqp.NewHTTPServerFunc(service))
-	addressAndPort := fmt.Sprintf("%s:%s", *address, *port)
+	addressAndPort := fmt.Sprintf("%s:%s", *HTTPAddress, *HTTPPort)
 	log.Println("[http2amqp] Starting HTTP server at ", addressAndPort)
 	http.ListenAndServe(addressAndPort, nil)
 }
 
-func http2amqpPort() string {
+func defaultHTTPPort() string {
 	port := os.Getenv("PORT")
 
 	if len(port) == 0 {
@@ -48,6 +48,16 @@ func http2amqpPort() string {
 	}
 
 	return port
+}
+
+func defaultHTTPAddress() string {
+	address := os.Getenv("ADDRESS")
+
+	if len(address) == 0 {
+		address = "0.0.0.0"
+	}
+
+	return address
 }
 
 func localBrokerUri() string {
