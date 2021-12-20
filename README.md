@@ -1,6 +1,6 @@
 # http2amqp
+[![Build Status](https://app.travis-ci.com/aleasoluciones/http2amqp.svg?branch=master)](https://app.travis-ci.com/github/aleasoluciones/http2amqp)
 
-[![Build Status](https://travis-ci.com/aleasoluciones/http2amqp.svg)](https://travis-ci.com/aleasoluciones/http2amqp)
 
 HTTP interface to AMPQ. 
 
