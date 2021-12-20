@@ -14,17 +14,23 @@ import (
 	"github.com/aleasoluciones/http2amqp"
 )
 
+const defaultTimeoutMs = 1000
+const defaultExchange = "events"
+const defaultHTTPPort = "18080"
+const defaultHTTPAddress = "0.0.0.0"
+const defaultBrokerURI = "amqp://guest:guest@localhost/"
+
 func main() {
 	alealog.Init()
 	alealog.DisableLogging()
 	defaultVerbose := verboseMode()
 
 	verbose := flag.Bool("verbose", defaultVerbose, "Verbose mode, enable logging")
-	amqpuri := flag.String("amqpuri", localBrokerUri(), "AMQP connection uri")
-	HTTPAddress := flag.String("address", defaultHTTPAddress(), "Listen address")
-	HTTPPort := flag.String("port", defaultHTTPPort(), "Listen port")
-	exchange := flag.String("exchange", "events", "AMQP exchange name")
-	timeout := flag.Int("timeout", 1000, "Queries timeout in milliseconds")
+	amqpuri := flag.String("amqpuri", envBrokerURI(), "AMQP connection uri")
+	HTTPAddress := flag.String("address", envHTTPAddress(), "HTTP Listen address")
+	HTTPPort := flag.String("port", envHTTPPort(), "HTTP Listen port")
+	exchange := flag.String("exchange", defaultExchange, "AMQP exchange name")
+	timeout := flag.Int("timeout", defaultTimeoutMs, "AMQP Queries timeout in milliseconds")
 	flag.Parse()
 
 	if *verbose {
@@ -40,34 +46,34 @@ func main() {
 	http.ListenAndServe(addressAndPort, nil)
 }
 
-func defaultHTTPPort() string {
+func envHTTPPort() string {
 	port := os.Getenv("PORT")
 
 	if len(port) == 0 {
-		port = "18080"
+		port = defaultHTTPPort
 	}
 
 	return port
 }
 
-func defaultHTTPAddress() string {
+func envHTTPAddress() string {
 	address := os.Getenv("ADDRESS")
 
 	if len(address) == 0 {
-		address = "0.0.0.0"
+		address = defaultHTTPAddress
 	}
 
 	return address
 }
 
-func localBrokerUri() string {
-	brokerUri := os.Getenv("BROKER_URI")
+func envBrokerURI() string {
+	brokerURI := os.Getenv("BROKER_URI")
 
-	if len(brokerUri) == 0 {
-		brokerUri = "amqp://guest:guest@localhost/"
+	if len(brokerURI) == 0 {
+		brokerURI = defaultBrokerURI
 	}
 
-	return brokerUri
+	return brokerURI
 }
 
 func isTrue(value string) bool {
