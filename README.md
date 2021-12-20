@@ -2,8 +2,7 @@
 
 [![Build Status](https://travis-ci.com/aleasoluciones/http2amqp.svg)](https://travis-ci.com/aleasoluciones/http2amqp)
 
-## Disclaimer
-Any documentation is obsolete from the very moment it is written down, so mistrust it and check it still applies.
+HTTP interface to AMPQ. 
 
 ## Features
 * It publishes an amqp message for each http request received and process the corresponding amqp responses (it waits for it) in order to answer to the original http request.
@@ -20,16 +19,28 @@ make
 ```
 
 ## Running tests
-Before running test, ensure you have to ```make build``` to generate *echoservice* executable
+Before running test:
 
-Makefile has a test section for running tests.
+* Ensure you have `echoservice` binary is built. To build `echoservice` run `make build` 
+```
+make build
+```
+* Start a rabbitmq service with default credentials
+
+```
+docker run --rm -d --name http2amqp-rabbit -p5672:5672 rabbitmq:3
+```
+
+You can use BROKER_URI env for setting your custom rabbitmq values
+
+```
+BROKER_URI="amqp://guest:guest@localhost/" make test
+```
+
+* Run tests with `make test`. `Makefile` has a test section for running tests.
 ```
 make test
 ```
-
-You should use BROKER_URI env for setting your custom rabbitmq values
-
-BROKER_URI="amqp://guest:guest@localhost/" make test
 
 ## Building docker image
 Also there is a script for building a docker image
