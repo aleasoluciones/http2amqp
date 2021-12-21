@@ -1,7 +1,5 @@
 github.com/aleasoluciones/goaleasoluciones v0.0.0-20200619085850-b0f5cadff0cb h1:yJL9l+a+AhbDgXxR1qfF/uGaJ/wY8hq4He4Fo8sonkU=
 github.com/aleasoluciones/goaleasoluciones v0.0.0-20200619085850-b0f5cadff0cb/go.mod h1:dPDme2W0OahZUhqg9YFKeTvA7EeuLaT9jXWhiTsNIAE=
-github.com/aleasoluciones/http2amqp v0.4.5 h1:PyO9KqgHVFAAVX4/4jLZ9Z6rPiMzAydS3zGuyqVvqBs=
-github.com/aleasoluciones/http2amqp v0.4.5/go.mod h1:ov7qUNUPOFd2T+lasD1uJR3ez653eV0xKVD+zY3Ed/s=
 github.com/aleasoluciones/simpleamqp v0.0.0-20211220133653-63fd15d27f9f h1:rQiUdbBfqwYF4dHDJtV2odtYyjGIkfioyUpjmCZAw50=
 github.com/aleasoluciones/simpleamqp v0.0.0-20211220133653-63fd15d27f9f/go.mod h1:aY17WSuK/SuFMUdnmdR1FgO1CW8SxWg7m+583UGbOqY=
 github.com/certifi/gocertifi v0.0.0-20170417193930-a9c833d2837d h1:VGgODlpy6fRZgo+uUGrDk6+Rkp2IM38NUu/IcM8uuSA=

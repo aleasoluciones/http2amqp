@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"strings"
 	"time"
 
+	"aleasoluciones/http2amqp"
+
 	alealog "github.com/aleasoluciones/goaleasoluciones/log"
-	"github.com/aleasoluciones/http2amqp"
 )
 
 const defaultTimeoutMs = 1000

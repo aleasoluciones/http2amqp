@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/aleasoluciones/goaleasoluciones v0.0.0-20200619085850-b0f5cadff0cb
-	github.com/aleasoluciones/http2amqp v0.4.5
 	github.com/aleasoluciones/simpleamqp v0.0.0-20211220133653-63fd15d27f9f
 	github.com/pborman/uuid v0.0.0-20170612153648-e790cca94e6c
 	github.com/stretchr/testify v1.1.5-0.20171018052257-2aa2c176b9da
