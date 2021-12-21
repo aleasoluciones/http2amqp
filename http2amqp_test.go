@@ -1,8 +1,10 @@
+//go:build integration
 // +build integration
 
 package http2amqp_test
 
 import (
+	. "aleasoluciones/http2amqp"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -11,11 +13,21 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/aleasoluciones/http2amqp"
 	"github.com/stretchr/testify/assert"
 )
 
-var service = NewService(os.Getenv("BROKER_URI"), "events", 1*time.Second)
+func envBrokerURI() string {
+
+	brokerURI := os.Getenv("BROKER_URI")
+
+	if len(brokerURI) == 0 {
+		brokerURI = "amqp://guest:guest@localhost/"
+	}
+
+	return brokerURI
+}
+
+var service = NewService(envBrokerURI(), "events", 1*time.Second)
 
 func TestHttpSuccessfullGetToEchoServer(t *testing.T) {
 	t.Parallel()
