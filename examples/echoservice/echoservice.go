@@ -7,7 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/aleasoluciones/http2amqp"
+	"aleasoluciones/http2amqp"
+
 	"github.com/aleasoluciones/simpleamqp"
 )
 
