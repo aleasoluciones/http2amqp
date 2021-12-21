@@ -31,7 +31,7 @@ test:
 	- pkill -f echoservice
 
 build:
-	godep go build -a -installsuffix cgo -o http2amqp httpserver/http2amqp.go
+	godep go build -a -installsuffix cgo -o http2amqp examples/httpserver/http2amqp.go
 	godep go build -a -installsuffix cgo -o echoservice examples/echoservice/echoservice.go
 
 clean:
