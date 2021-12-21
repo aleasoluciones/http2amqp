@@ -35,8 +35,8 @@ build:
 	godep go build -a -installsuffix cgo -o echoservice examples/echoservice/echoservice.go
 
 clean:
-	rm -rf http2amqp
-	rm -rf echoservice
+	rm -f http2amqp
+	rm -f echoservice
 
 production_restore_deps:
 	godep restore
