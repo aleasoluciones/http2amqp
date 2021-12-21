@@ -1,44 +1,31 @@
 all: clean build test
 
-travis: install_dep_tool install_go_linter production_restore_deps clean build test
+travis: clean build test
 
-jenkins: install_dep_tool install_go_linter production_restore_deps clean build
+jenkins: clean build
 
-install_dep_tool:
-	go get github.com/tools/godep
+update_dep:
+	go get $(DEP)
+	go mod tidy
 
-install_go_linter:
-	go get -v -u golang.org/x/lint/golint
-
-initialize_deps:
-	go get -d -v ./...
-	go get -d -v github.com/stretchr/testify/assert
-	go get -v -u golang.org/x/lint/golint
-	godep save ./...
-
-update_deps:
-	godep go install  ./...
-	godep go install github.com/stretchr/testify/assert
-	godep go install golang.org/x/lint/golint
-	godep update ./...
+update_all_deps:
+	go get -u
+	go mod tidy
 
 test:
-	golint ./...
-	godep go vet ./...
+	go vet ./...
 	- pkill -f echoservice
 	./echoservice -topic '*.test.ok'  &
-	godep go test -v -tags integration -parallel 2 ./...
+	go test -v -tags integration -parallel 2 ./...
 	- pkill -f echoservice
 
 build:
-	godep go build -a -installsuffix cgo -o http2amqp examples/httpserver/http2amqp.go
-	godep go build -a -installsuffix cgo -o echoservice examples/echoservice/echoservice.go
+	go build -a -installsuffix cgo -o http2amqp examples/httpserver/http2amqp.go
+	go build -a -installsuffix cgo -o echoservice examples/echoservice/echoservice.go
 
 clean:
 	rm -f http2amqp
 	rm -f echoservice
 
-production_restore_deps:
-	godep restore
 
-.PHONY: all travis jenkins install_dep_tool install_go_linter initialize_deps update_deps test build clean production_restore_deps
+.PHONY: all travis jenkins update_dep update_all_deps test build clean 
