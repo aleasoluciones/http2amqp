@@ -13,7 +13,7 @@ RUN cp http2amqp /
 
 FROM scratch AS http2amqp-compiled
 
-COPY --from=build-stage http2amqp /
+COPY --from=http2amqp-builder http2amqp /
 
 EXPOSE 18080
 ENTRYPOINT ["/http2amqp", "-verbose"]
