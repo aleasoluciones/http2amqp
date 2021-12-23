@@ -1,4 +1,4 @@
-FROM golang:1.17.2 AS build-stage
+FROM golang:1.17.2 AS http2amqp-builder
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN mkdir -pv $GOPATH/github.com/aleasoluciones/http2amqp
@@ -11,7 +11,7 @@ ENV CGO_ENABLED 0
 RUN make jenkins
 RUN cp http2amqp /
 
-FROM scratch
+FROM scratch AS http2amqp-compiled
 
 COPY --from=build-stage http2amqp /
 
