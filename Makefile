@@ -20,8 +20,8 @@ test:
 	- pkill -f echoservice
 
 build:
-	go build -a -installsuffix cgo -o http2amqp examples/httpserver/http2amqp.go
-	go build -a -installsuffix cgo -o echoservice examples/echoservice/echoservice.go
+	go build -o http2amqp examples/httpserver/http2amqp.go
+	go build -o echoservice examples/echoservice/echoservice.go
 
 clean:
 	rm -f http2amqp

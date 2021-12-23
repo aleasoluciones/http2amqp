@@ -109,4 +109,6 @@ curl -X GET http://localhost:18080/test?timeout=200 -d 'hello world'
 ## TODO
  - test timeout parameter for each request
  - implement delay parameter for echo server to allow tests timeouts
- - we build with 'installsuffix cgo' and in Dockerfile we set CGO_ENABLED=True, maybe we can simplify this process
+
+## Notes
+* We build the package in the Dockerfile with CGO_ENABLED=0 because in scratch there is not some C files so we need to compile it with them in order to run it properly. Ref. https://go.dev/blog/cgo
