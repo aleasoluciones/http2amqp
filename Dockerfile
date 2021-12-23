@@ -11,7 +11,7 @@ ENV CGO_ENABLED 0
 RUN make jenkins
 RUN cp http2amqp /
 
-FROM scratch AS http2amqp-compiled
+FROM scratch AS http2amqp
 
 COPY --from=http2amqp-builder http2amqp /
 

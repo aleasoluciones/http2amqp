@@ -19,8 +19,6 @@ pipeline {
         REPO_NAME = "${REPO_URL.tokenize('/').last().split('\\.')[0]}"
         GIT_REV = sh(script: "git rev-parse --short=7 HEAD", returnStdout: true).trim()
         BUILDER_TAG="${REPO_NAME}-builder"
-        COMPILED_TAG="${REPO_NAME}-compiled"
-
     }
 
     stages {
@@ -28,7 +26,7 @@ pipeline {
             steps {
                 echo "-=- Build Docker images -=-"
                 sh "script -e -c 'docker build . --target ${BUILDER_TAG} -t ${ORGANIZATION}/${BUILDER_TAG}:${GIT_REV}'"
-                sh "script -e -c 'docker build . --target ${COMPILED_TAG} -t ${ORGANIZATION}/${COMPILED_TAG}:${GIT_REV}'"
+                sh "script -e -c 'docker build . --target ${REPO_NAME} -t ${ORGANIZATION}/${REPO_NAME}:${GIT_REV}'"
             }
         }
         stage('Run Integration Tests') {
@@ -42,13 +40,13 @@ pipeline {
         stage('Release Docker image') {
             steps {
                 echo "-=- release Docker image -=-"
-                sh "docker push ${ORGANIZATION}/${COMPILED_TAG}:${GIT_REV}"
+                sh "docker push ${ORGANIZATION}/${REPO_NAME}:${GIT_REV}"
             }
         }
         stage('Run Staging deploy') {
             steps {
                 echo "-=- run staging deploy -=-"
-                sh "script -e -c 'deploy.sh -r ${COMPILED_TAG} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING}'"
+                sh "script -e -c 'deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING}'"
             }
         }
     }
