@@ -34,7 +34,7 @@ pipeline {
                 echo "-=- run integration tests -=-"
                 sh "docker-compose -f dev/http2amqp_devdocker/docker-compose.yml up -d"
                 sh "sleep 30"
-                sh "docker run --rm --net=host ${ORGANIZATION}/${BUILDER_TAG}:${GIT_REV} make test"
+                sh "docker run --rm --net=host -e BROKER_URI='amqp://guest:guest@localhost:5666/' ${ORGANIZATION}/${BUILDER_TAG}:${GIT_REV} make test"
                 sh "docker-compose -f dev/http2amqp_devdocker/docker-compose.yml down"
             }
         }
