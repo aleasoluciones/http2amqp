@@ -1,0 +1,11 @@
+version: "2.1"
+services:
+  rabbit_felix:
+    image: rabbitmq:3.7.4-management
+    network_mode: bridge
+    ports:
+     - "15672:15672"
+     - "5672:5672"
+    volumes:
+     - /etc/localtime:/etc/localtime:ro
+
