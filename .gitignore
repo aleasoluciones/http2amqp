@@ -37,3 +37,6 @@ echoservice
 
 # Exclude vendor directory (godep dependency manager tool)
 vendor
+
+# CTags
+tags
