@@ -1,11 +1,11 @@
+os: linux
+
+dist: focal
+
 language: go
+
 go:
   - 1.17.x
-
-sudo: false
-
-env:
-  - BROKER_URI=amqp://guest:guest@localhost/
 
 services:
   - rabbitmq
@@ -13,16 +13,18 @@ services:
 addons:
   apt:
     packages:
-    - rabbitmq-server
+      - rabbitmq-server
 
-# safelist branch to build
 branches:
   only:
     - master
+
+env:
+  - BROKER_URI=amqp://guest:guest@127.0.0.1:5672/
 
 script:
   - make travis
 
 notifications:
   email:
-  - bifer@alea-soluciones.com
+    - bifer@alea-soluciones.com
