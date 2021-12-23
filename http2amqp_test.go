@@ -21,7 +21,7 @@ func envBrokerURI() string {
 	brokerURI := os.Getenv("BROKER_URI")
 
 	if len(brokerURI) == 0 {
-		brokerURI = "amqp://guest:guest@localhost/"
+		brokerURI = "amqp://guest:guest@localhost:5666/"
 	}
 
 	return brokerURI

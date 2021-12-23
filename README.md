@@ -2,7 +2,7 @@
 [![Build Status](https://app.travis-ci.com/aleasoluciones/http2amqp.svg?branch=master)](https://app.travis-ci.com/github/aleasoluciones/http2amqp)
 
 
-HTTP interface to AMPQ. 
+HTTP interface to AMPQ.
 
 ## Features
 * It publishes an amqp message for each http request received and process the corresponding amqp responses (it waits for it) in order to answer to the original http request.
@@ -21,7 +21,7 @@ make
 ## Running tests
 Before running test:
 
-* Ensure you have `echoservice` binary is built. To build `echoservice` run `make build` 
+* Ensure you have `echoservice` binary is built. To build `echoservice` run `make build`
 ```
 make build
 ```
@@ -109,4 +109,4 @@ curl -X GET http://localhost:18080/test?timeout=200 -d 'hello world'
 ## TODO
  - test timeout parameter for each request
  - implement delay parameter for echo server to allow tests timeouts
-
+ - we build with 'installsuffix cgo' and in Dockerfile we set CGO_ENABLED=True, maybe we can simplify this process

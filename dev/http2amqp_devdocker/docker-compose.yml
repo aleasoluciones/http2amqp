@@ -5,7 +5,7 @@ services:
     network_mode: bridge
     ports:
      - "15672:15672"
-     - "5672:5672"
+     - "5666:5672"
     volumes:
      - /etc/localtime:/etc/localtime:ro
 
