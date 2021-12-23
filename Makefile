@@ -16,6 +16,7 @@ test:
 	go vet ./...
 	- pkill -f echoservice
 	./echoservice -topic '*.test.ok'  &
+	go clean -testcache
 	go test -v -tags integration -parallel 2 ./...
 	- pkill -f echoservice
 
