@@ -76,7 +76,7 @@ Usage of ./http2amqp:
   -address string
     	HTTP listen IP address (default "0.0.0.0")
   -brokeruri string
-    	AMQP broker connection URI (default "amqp://guest:guest@localhost:5665/")
+    	AMQP broker connection URI (default "amqp://guest:guest@localhost/")
   -exchange string
     	AMQP broker exchange name (default "events")
   -port string
