@@ -1,3 +1,12 @@
+## [1.0.0] - 2021-12-17
+* Migrate to Go modules, work with Go 1.17
+* Add Jenkins pipeline
+* Update dependencies
+* Add docker-compose for running a RabbitMQ in dev
+* Add environment variables
+* Clean Makefile
+* Improve README
+
 ## [0.4.8] - 2019-02-22
 * Port is parameterized
 

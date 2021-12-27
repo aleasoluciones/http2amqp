@@ -1,114 +1,119 @@
 # http2amqp
-[![Build Status](https://app.travis-ci.com/aleasoluciones/http2amqp.svg?branch=master)](https://app.travis-ci.com/github/aleasoluciones/http2amqp)
 
+[![Build Status](https://app.travis-ci.com/aleasoluciones/http2amqp.svg?branch=master)](https://app.travis-ci.com/github/aleasoluciones/http2amqp)
+[![GoDoc](https://godoc.org/github.com/aleasoluciones/http2amqp?status.png)](http://godoc.org/github.com/aleasoluciones/http2amqp)
+[![License](https://img.shields.io/github/license/aleasoluciones/http2amqp)](https://github.com/aleasoluciones/http2amqp/blob/master/LICENSE)
 
 HTTP interface to AMPQ.
 
 ## Features
-* It publishes an amqp message for each http request received and process the corresponding amqp responses (it waits for it) in order to answer to the original http request.
-* The topic of the message it publishes comes from the URL Path of the HTTP request, using the HTTP method, network and the path replacing '/' with '.'
-  * E.g.: 'get.arl.cpe'
-* The TTL for the messages published is 1000 ms
-* The exchange used by default is 'events'
+
+- It publishes an AMQP request message for each HTTP request received. Then it waits for the corresponding AMQP response message in order to answer to the original HTTP request.
+- The topic of the message that it publishes comes from the method and the path of the HTTP request, replacing slashes (/) with dots (.).
+  - e.g.: `GET http://localhost:18080/net/test` → `get.net.test`
+- The topic of the response messages to close the connection is `queries.response`. These response messages must carry the same ID as the request they intend to close.
+- The default TTL for the published messages is 1000 ms. After that, the connection will be closed with a timeout if a response did not arrive.
+- The exchange used by default is 'events'.
 
 
 ## Build
-A Makefile is available so you only need to run
-```
-make
+
+You need a Go runtime installed in your system which supports [modules](https://tip.golang.org/doc/go1.16#modules). A nice way to have multiple Go versions and switch easily between them is the [g](https://github.com/stefanmaric/g) application.
+
+A [Makefile](Makefile) is available, so you only need to run:
+
+```sh
+make build
 ```
 
 ## Running tests
-Before running test:
 
-* Ensure you have `echoservice` binary is built. To build `echoservice` run `make build`
-```
-make build
-```
-* Start a rabbitmq service with default credentials
+Make sure that you have built the binaries from the previous section, because the tests will run the `echoservice` binary. 
 
-```
-docker run --rm -d --name http2amqp-rabbit -p5672:5672 rabbitmq:3
+Load environment variables to set the BROKER_URI environment variable.
+
+```sh
+source dev/env_develop
 ```
 
-You can use BROKER_URI env for setting your custom rabbitmq values
+Start a RabbitMQ service with default configuration (specified in [`/dev/env_develop`](/dev/env_develop)).
 
-```
-BROKER_URI="amqp://guest:guest@localhost/" make test
+```sh
+make start_dependencies
 ```
 
-* Run tests with `make test`. `Makefile` has a test section for running tests.
-```
+Run tests. They will only work if the RabbitMQ container is up.
+
+```sh
 make test
 ```
 
-## Building docker image
-Also there is a script for building a docker image
+## Building docker images
 
+The Jenkins [pipeline](Jenkinsfile) will generate two containers, which we can also build locally. One for compiling the app (http2amqp-builder), and the other to deploy its binary (http2amqp). This avoids the need of having Go installed in the host system.  Take a look at the [Dockerfile](Dockerfile) for more details.
+
+```sh
+make build_images
 ```
-./build.sh
+
+Once built, if we want to run the tests inside the builder image, we can do the following (remember to have the environment variables loaded and the RabbitMQ container up too):
+
+```sh
+docker run --rm -it --net=host aleasoluciones/http2amqp:GIT_REV integration-tests
 ```
 
 ## Usage
-```
-$ ./http2amqp --help
+
+```sh
+$ ./http2amqp -help
 Usage of ./http2amqp:
-  -address="0.0.0.0": Listen address
-  -amqpuri="amqp://guest:guest@localhost/": AMQP connection uri
-  -exchange="events": AMQP exchange name
-  -port="18080": Listen port
-  -timeout=1000: Queries timeout in milliseconds
-  -verbose :Enable logging, false by default
-```
-
-## Debugging
-
-Running the container with verbose mode to debugg whats happening
-
-```
- docker-compose -f docker-compose.yml run http2amqp -verbose
+  -address string
+    	HTTP listen IP address (default "0.0.0.0")
+  -brokeruri string
+    	AMQP broker connection URI (default "amqp://guest:guest@localhost:5665/")
+  -exchange string
+    	AMQP broker exchange name (default "events")
+  -port string
+    	HTTP listen port (default "18080")
+  -timeout int
+    	AMQP broker queries timeout in milliseconds (default 1000)
+  -verbose
+    	Verbose mode, enable logging
 ```
 
 ## Execution example
-With a rabbitmq running with the default credentials...
 
-```
-docker run --rm -d --name http2amqp-rabbit -p5672:5672 rabbitmq:3
-```
+Make sure that the environment variables are loaded before executing each command. Also that you have a RabbitMQ container up and running with those parameters.
 
-Start the htt2amqp server in a terminal
-```
-./http2amqp
+Start the htt2amqp server in a terminal.
+
+```sh
+./http2amqp -verbose
 ```
 
-Use `HTTP2AMPQ_VERBOSE` env to enable verbose mode
-```
-HTTP2AMPQ_VERBOSE=y ./http2amqp
-```
-Also can use the argument `-v`
+Start the echo service in another terminal. This will publish a response event each time a request event arrives, with the same ID and payload (ping pong).
 
-```
-./http2amqp -v
-```
-
-Start in another terminal the echo service
-```
+```sh
 ./echoservice
 ```
 
-Tests diferent get requests to be served by the echo service
+Make a request with a payload. The echo service will answer back if running, otherwise it will timeout.
+
 ```
-curl -X GET http://localhost:18080/test -d 'hello world'
+curl -X GET http://localhost:18080/net/test -d 'hello world'
 ```
 
-You can specify the timeout (in milliseconds) for waiting for the response
+You can specify the timeout (in milliseconds) as a query param.
+
 ```
-curl -X GET http://localhost:18080/test?timeout=200 -d 'hello world'
+curl -X GET http://localhost:18080/net/test?timeout=200 -d 'hello world'
 ```
 
 ## TODO
- - test timeout parameter for each request
- - implement delay parameter for echo server to allow tests timeouts
+
+- Test timeout parameter for each request.
+- Implement delay parameter for echo server to allow tests timeouts.
 
 ## Notes
-* We build the package in the Dockerfile with CGO_ENABLED=0 because in scratch there is not some C files so we need to compile it with them in order to run it properly. Ref. https://go.dev/blog/cgo
+
+* We compile in the Dockerfile with CGO_ENABLED=0 because in the scratch image there are not some C libraries it needs. So we compile the application with them in order to run it properly. See https://go.dev/blog/cgo for more info.
