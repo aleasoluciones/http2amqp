@@ -1,11 +1,13 @@
-version: "2.1"
+version: "3"
 services:
-  rabbit_felix:
+  rabbitmq:
     image: rabbitmq:3.7.4-management
     network_mode: bridge
+    environment:
+      - RABBITMQ_DEFAULT_USER=${BROKER_USER}
+      - RABBITMQ_DEFAULT_PASS=${BROKER_PASSWORD}
     ports:
-     - "15672:15672"
-     - "5666:5672"
+     - ${BROKER_MANAGEMENT_PORT}:15672
+     - ${BROKER_PORT}:5672
     volumes:
      - /etc/localtime:/etc/localtime:ro
-

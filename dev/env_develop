@@ -1,0 +1,9 @@
+echo "DEVELOP enviroment"
+
+export GIT_REV=$(git rev-parse --short=7 HEAD)
+
+export BROKER_USER=guest
+export BROKER_PASSWORD=guest
+export BROKER_PORT=5666
+export BROKER_MANAGEMENT_PORT=15666
+export BROKER_URI=amqp://${BROKER_USER}:${BROKER_PASSWORD}@localhost:${BROKER_PORT}/
