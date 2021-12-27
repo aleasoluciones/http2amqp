@@ -18,7 +18,7 @@ const defaultTimeoutMs = 1000
 const defaultExchange = "events"
 const defaultHTTPPort = "18080"
 const defaultHTTPAddress = "0.0.0.0"
-const defaultBrokerURI = "amqp://guest:guest@localhost:5666/"
+const defaultBrokerURI = "amqp://guest:guest@localhost/"
 
 func main() {
 	alealog.Init()

@@ -59,7 +59,13 @@ make build_images
 Once built, if we want to run the tests inside the builder image, we can do the following (remember to have the environment variables loaded and the RabbitMQ container up too):
 
 ```sh
-docker run --rm -it --net=host aleasoluciones/http2amqp:GIT_REV integration-tests
+docker run --rm -it --net=host aleasoluciones/http2amqp-builder:GIT_REV integration-tests
+```
+
+And to run http2amqp from inside the container:
+
+```sh
+docker run --rm -it --net=host -e BROKER_URI=amqp://guest:guest@localhost:5666/ aleasoluciones/http2amqp:GIT_REV
 ```
 
 ## Usage
