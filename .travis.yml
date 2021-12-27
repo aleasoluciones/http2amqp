@@ -20,10 +20,11 @@ branches:
     - master
 
 env:
-  - BROKER_URI=amqp://guest:guest@127.0.0.1:5672/
+  - BROKER_URI=amqp://guest:guest@127.0.0.1/
 
 script:
-  - make travis
+  - make build
+  - make test
 
 notifications:
   email:
