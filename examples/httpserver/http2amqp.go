@@ -18,7 +18,7 @@ const defaultTimeoutMs = 1000
 const defaultExchange = "events"
 const defaultHTTPPort = "18080"
 const defaultHTTPAddress = "0.0.0.0"
-const defaultBrokerURI = "amqp://guest:guest@localhost/"
+const defaultBrokerURI = "amqp://guest:guest@localhost:5666/"
 
 func main() {
 	alealog.Init()
@@ -26,11 +26,11 @@ func main() {
 	defaultVerbose := verboseMode()
 
 	verbose := flag.Bool("verbose", defaultVerbose, "Verbose mode, enable logging")
-	amqpuri := flag.String("amqpuri", envBrokerURI(), "AMQP connection uri")
-	HTTPAddress := flag.String("address", envHTTPAddress(), "HTTP Listen address")
-	HTTPPort := flag.String("port", envHTTPPort(), "HTTP Listen port")
-	exchange := flag.String("exchange", defaultExchange, "AMQP exchange name")
-	timeout := flag.Int("timeout", defaultTimeoutMs, "AMQP Queries timeout in milliseconds")
+	brokeruri := flag.String("brokeruri", envBrokerURI(), "AMQP broker connection URI")
+	HTTPAddress := flag.String("address", envHTTPAddress(), "HTTP listen IP address")
+	HTTPPort := flag.String("port", envHTTPPort(), "HTTP listen port")
+	exchange := flag.String("exchange", defaultExchange, "AMQP broker exchange name")
+	timeout := flag.Int("timeout", defaultTimeoutMs, "AMQP broker queries timeout in milliseconds")
 	flag.Parse()
 
 	if *verbose {
@@ -38,7 +38,7 @@ func main() {
 		log.Println("[http2amqp] verbose mode enabled")
 	}
 
-	service := http2amqp.NewService(*amqpuri, *exchange, time.Duration(*timeout)*time.Millisecond)
+	service := http2amqp.NewService(*brokeruri, *exchange, time.Duration(*timeout)*time.Millisecond)
 
 	http.HandleFunc("/", http2amqp.NewHTTPServerFunc(service))
 	addressAndPort := fmt.Sprintf("%s:%s", *HTTPAddress, *HTTPPort)

@@ -1,5 +1,4 @@
 //go:build integration
-// +build integration
 
 package http2amqp_test
 
