@@ -25,8 +25,8 @@ pipeline {
         stage('Build Docker images') {
             steps {
                 echo "-=- Build Docker images -=-"
-                sh "script -e -c 'docker build . --target ${BUILDER_TAG} -t ${ORGANIZATION}/${BUILDER_TAG}:${GIT_REV}'"
-                sh "script -e -c 'docker build . --target ${REPO_NAME} -t ${ORGANIZATION}/${REPO_NAME}:${GIT_REV}'"
+                sh "script -e -c 'docker build . --no-cache --target ${BUILDER_TAG} -t ${ORGANIZATION}/${BUILDER_TAG}:${GIT_REV}'"
+                sh "script -e -c 'docker build . --no-cache --target ${REPO_NAME} -t ${ORGANIZATION}/${REPO_NAME}:${GIT_REV}'"
             }
         }
         stage('Run Integration Tests') {
