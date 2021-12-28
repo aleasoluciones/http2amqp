@@ -3,7 +3,7 @@
 package http2amqp_test
 
 import (
-	. "aleasoluciones/http2amqp"
+	. "github.com/aleasoluciones/http2amqp"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"

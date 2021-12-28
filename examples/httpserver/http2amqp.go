@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"aleasoluciones/http2amqp"
+	"github.com/aleasoluciones/http2amqp"
 
 	alealog "github.com/aleasoluciones/goaleasoluciones/log"
 )
