@@ -25,4 +25,4 @@ COPY --from=http2amqp-builder /app/http2amqp /
 
 EXPOSE 18080
 
-ENTRYPOINT ["/http2amqp", "-verbose"]
+ENTRYPOINT ["/http2amqp"]
