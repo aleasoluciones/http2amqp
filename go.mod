@@ -1,4 +1,4 @@
-module aleasoluciones/http2amqp
+module github.com/aleasoluciones/http2amqp
 
 go 1.17
 
