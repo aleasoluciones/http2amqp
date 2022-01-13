@@ -21,8 +21,10 @@ const defaultHTTPAddress = "0.0.0.0"
 const defaultBrokerURI = "amqp://guest:guest@localhost/"
 
 func main() {
+	defer alealog.HandlePanic()
 	alealog.Init()
 	alealog.DisableLogging()
+	alealog.InitSentry()
 	defaultVerbose := verboseMode()
 
 	verbose := flag.Bool("verbose", defaultVerbose, "Verbose mode, enable logging")
