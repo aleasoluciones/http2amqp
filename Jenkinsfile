@@ -40,7 +40,9 @@ pipeline {
         stage('Release Docker image') {
             steps {
                 echo "-=- release Docker image -=-"
+                sh "docker tag ${ORGANIZATION}/${REPO_NAME}:${GIT_REV} ${ORGANIZATION}/${REPO_NAME}:latest"
                 sh "docker push ${ORGANIZATION}/${REPO_NAME}:${GIT_REV}"
+                sh "docker push ${ORGANIZATION}/${REPO_NAME}:latest"
             }
         }
         stage('Run Staging deploy') {
