@@ -2,7 +2,7 @@
 
 pipeline {
     options {
-        buildDiscarder(logRotator(numToKeepStr: '${BUILDS_TO_KEEP}', artifactNumToKeepStr: '${ARTIFACTS_TO_KEEP}'))
+        buildDiscarder(logRotator(numToKeepStr: "${BUILDS_TO_KEEP}", artifactNumToKeepStr: "${ARTIFACTS_TO_KEEP}"))
         ansiColor('xterm')
     }
 
