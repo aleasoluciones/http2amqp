@@ -1,6 +1,6 @@
 # http2amqp
 
-[![Build Status](https://app.travis-ci.com/aleasoluciones/http2amqp.svg?branch=master)](https://app.travis-ci.com/github/aleasoluciones/http2amqp)
+[![CI](https://github.com/aleasoluciones/http2amqp/actions/workflows/ci.yml/badge.svg)](https://github.com/aleasoluciones/http2amqp/actions/workflows/ci.yml)
 [![GoDoc](https://godoc.org/github.com/aleasoluciones/http2amqp?status.png)](http://godoc.org/github.com/aleasoluciones/http2amqp)
 [![License](https://img.shields.io/github/license/aleasoluciones/http2amqp)](https://github.com/aleasoluciones/http2amqp/blob/master/LICENSE)
 
