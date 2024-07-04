@@ -1,6 +1,7 @@
 services:
   {{ component }}:
     command: {{ component }}
+    container_name: {{ component }}-{{ component }}
     environment:
       BROKER_URI: {{ inv_net_broker_uri }}
       PORT: 18080
