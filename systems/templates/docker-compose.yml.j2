@@ -1,15 +1,18 @@
-{{ component }}:
-  image: aleasoluciones/{{ component }}:{{ gitrevision }}
-  restart: always
-  command: {{ component }}
-  net: host
-  hostname: {{ inventory_hostname}}-{{ component }}
-  environment:
-    - BROKER_URI={{ inv_net_broker_uri }}
-    - PORT=18080
-  volumes:
-    - {{ docker_compose_data }}/{{ component }}:/data
+services:
+  {{ component }}:
+    command: {{ component }}
+    environment:
+      BROKER_URI: {{ inv_net_broker_uri }}
+      PORT: 18080
+    hostname: {{ inventory_hostname}}-{{ component }}
+    image: aleasoluciones/{{ component }}:{{ gitrevision }}
+    logging:
+      driver: syslog
+      options:
+        tag: docker/{{ component }}__{{ component }}
+    network_mode: host
+    restart: always
+    volumes:
+    - {{ docker_compose_data }}/{{ component }}:/data:rw
     - /etc/localtime:/etc/localtime:ro
-  log_driver: "syslog"
-  log_opt:
-    tag: "docker/{{ component }}__{{ component }}"
+version: '2.1'
