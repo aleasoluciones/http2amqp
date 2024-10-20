@@ -7,7 +7,7 @@ services:
       - RABBITMQ_DEFAULT_USER=${BROKER_USER}
       - RABBITMQ_DEFAULT_PASS=${BROKER_PASSWORD}
     ports:
-     - ${BROKER_MANAGEMENT_PORT}:15672
-     - ${BROKER_PORT}:5672
+      - ${BROKER_MANAGEMENT_PORT}:15672
+      - ${BROKER_PORT}:5672
     volumes:
-     - /etc/localtime:/etc/localtime:ro
+      - /etc/localtime:/etc/localtime:ro
