@@ -1,21 +1,23 @@
 ---
-- hosts: felix:felixlite
-  gather_facts: no
+- name: Deploy http2amqp
+  hosts: felix:felixlite
+  gather_facts: false
 
   vars_files:
     - ~/.felix/vars.yml
 
   tasks:
     - name: Include vars for environment
-      include_vars: ~/.felix/vars_{{ inv_environment | default('production') }}.yml
+      ansible.builtin.include_vars: ~/.felix/vars_{{ inv_environment | default('production') }}.yml
 
     - name: Check that variables are defined
-      assert:
+      ansible.builtin.assert:
         that:
           - component is defined
           - gitrevision is defined
 
-    - import_role:
+    - name: Import bifer docker-compose component role
+      ansible.builtin.import_role:
         name: bifer_docker_compose_component
       vars:
         bifer_docker_compose_component_path: "{{ docker_compose_etc }}/{{ component }}"
