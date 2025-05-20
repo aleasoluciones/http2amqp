@@ -1,6 +1,10 @@
+# File deployed by ansible
+name: {{ component }}
+
 services:
   {{ component }}:
-    command: {{ component }}
+    command:
+      - {{ component }}
     container_name: {{ component }}-{{ component }}
     environment:
       BROKER_URI: {{ inv_net_broker_uri }}
@@ -14,6 +18,12 @@ services:
     network_mode: host
     restart: always
     volumes:
-    - {{ docker_compose_data }}/{{ component }}:/data:rw
-    - /etc/localtime:/etc/localtime:ro
-version: '2.1'
+      - type: bind
+        source: {{ docker_compose_data }}/{{ component }}
+        target: /data
+        bind:
+          create_host_path: true
+      - type: bind
+        source: /etc/localtime
+        target: /etc/localtime
+        read_only: true
