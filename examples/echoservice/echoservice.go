@@ -53,6 +53,7 @@ func main() {
 		amqpPublisher.Publish(request.ResponseTopic, serializedResponse)
 	}
 }
+
 func LocalBrokerUri() string {
 	brokerUri := os.Getenv("BROKER_URI")
 	if len(brokerUri) == 0 {

@@ -7,6 +7,7 @@ package http2amqp
 import (
 	"errors"
 	"log"
+	"net/http"
 	"strconv"
 	"time"
 
@@ -91,7 +92,22 @@ func (service *Service) publishQuery(id string, topic string, request Request, t
 		ResponseTopic: responseTopic,
 	})
 	log.Println("[queries_service] Query id:", id, "topic:", topic, "request:", request, "ttl:", ttl)
-	service.amqpPublisher.PublishWithTTL(topic, serialized, durationToMilliseconds(ttl))
+	
+	headers := convertHeaders(request.Header)
+
+	service.amqpPublisher.PublishWithTTL(topic, serialized, durationToMilliseconds(ttl), headers)
+}
+
+func convertHeaders(h http.Header) map[string]interface{} {
+	out := make(map[string]interface{}, len(h))
+	for k, v := range h {
+		if len(v) == 1 {
+			out[k] = v[0]
+		} else {
+			out[k] = v
+		}
+	}
+	return out
 }
 
 func durationToMilliseconds(value time.Duration) int {
