@@ -1,4 +1,4 @@
-FROM golang:1.17.5 AS http2amqp-builder
+FROM golang:1.21.13 AS http2amqp-builder
 
 ENV DEBIAN_FRONTEND noninteractive
 
