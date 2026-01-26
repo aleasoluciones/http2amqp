@@ -9,7 +9,7 @@ services:
     environment:
       BROKER_URI: {{ inv_net_broker_uri }}
       PORT: 18080
-    hostname: {{ inventory_hostname}}-{{ component }}
+    hostname: {{ inv_name }}-{{ component }}
     image: aleasoluciones/{{ component }}:{{ gitrevision }}
     logging:
       driver: syslog
