@@ -5,6 +5,7 @@
 
   vars_files:
     - ~/.felix/vars.yml
+    - ~/.felix/vault_vars.yml
 
   tasks:
     - name: Include vars for environment
