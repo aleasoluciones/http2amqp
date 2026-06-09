@@ -48,7 +48,22 @@ pipeline {
         stage('Run Staging deploy') {
             steps {
                 echo "-=- run staging deploy -=-"
-                sh "script -e -c 'deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING}'"
+                // Envolvemos el script con la credencial de Jenkins
+                withCredentials([string(credentialsId: 'ansible-vault-password', variable: 'VAULT_PASS')]) {
+                    sh '''
+                        # 1. Guardamos de forma temporal la contraseña en un archivo oculto
+                        echo "$VAULT_PASS" > .vault_pass.txt
+                        
+                        # 2. Le indicamos a Ansible que use este archivo automáticamente
+                        export ANSIBLE_VAULT_PASSWORD_FILE=.vault_pass.txt
+                        
+                        # 3. Lanzamos vuestro script original
+                        script -e -c "deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING}"
+                        
+                        # 4. Borramos el archivo temporal de forma obligatoria por seguridad
+                        rm -f .vault_pass.txt
+                    '''
+                }
             }
         }
     }
