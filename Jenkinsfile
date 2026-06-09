@@ -49,8 +49,14 @@ pipeline {
             steps {
                 echo "-=- run staging deploy -=-"
                 sh '''
+                    # 1. Copiamos el archivo del que ya tenemos permisos (/tmp/.env_key) 
+                    # a una variable de entorno especial que Ansible reconoce por defecto.
+                    # Ansible busca automáticamente la variable ANSIBLE_VAULT_PASSWORD_FILE si existe.
                     
-                    script -e -c "deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING} -v /tmp/.env_key:/root/.env_key:ro"
+                    export ANSIBLE_VAULT_PASSWORD_FILE=/tmp/.env_key
+                    
+                    # 2. Lanzamos vuestro script limpio original (sin inventar parámetros -v extras que rompan Ansible)
+                    script -e -c "deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING}"
                 '''
             }
         }
