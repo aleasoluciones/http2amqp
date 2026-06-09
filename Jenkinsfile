@@ -48,18 +48,7 @@ pipeline {
         stage('Run Staging deploy') {
             steps {
                 echo "-=- run staging deploy -=-"
-                withCredentials([string(credentialsId: 'ansible-vault-password', variable: 'VAULT_PASS')]) {
-                    sh '''
-                        # 1. Creamos el archivo con la contraseña
-                        echo "$VAULT_PASS" > .vault_pass.txt
-                        
-                        # 2. Exportamos y llamamos a deploy.sh de forma global (sin ./)
-                        script -e -c "export ANSIBLE_VAULT_PASSWORD_FILE=.vault_pass.txt && deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING}"
-                        
-                        # 3. Borramos por seguridad al terminar
-                        rm -f .vault_pass.txt
-                    '''
-                }
+                sh "script -e -c 'deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING}'"
             }
         }
     }
