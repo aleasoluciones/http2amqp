@@ -49,8 +49,11 @@ pipeline {
             steps {
                 echo "-=- run staging deploy -=-"
                 sh '''
-      
-                    script -e -c "deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING} --vault-password-file=/tmp/.env_key"
+                    # 1. Definimos la variable de entorno apuntando a la ruta que Jenkins SÍ puede leer
+                    export ENV_KEY_PATH=/tmp/.env_key
+                    
+                    # 2. Ejecutamos vuestro script original pasando los parámetros limpios que ya teníais
+                    script -e -c "deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING}"
                 '''
             }
         }
