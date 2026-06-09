@@ -53,10 +53,10 @@ pipeline {
                         # 1. Creamos el archivo con la contraseña
                         echo "$VAULT_PASS" > .vault_pass.txt
                         
-                        # 2. Forzamos a que el comando 'script' inyecte la variable al arrancar la sub-shell
-                        script -e -c "export ANSIBLE_VAULT_PASSWORD_FILE=.vault_pass.txt && ./deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING}"
+                        # 2. Exportamos y llamamos a deploy.sh de forma global (sin ./)
+                        script -e -c "export ANSIBLE_VAULT_PASSWORD_FILE=.vault_pass.txt && deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING}"
                         
-                        # 3. Borramos por seguridad
+                        # 3. Borramos por seguridad al terminar
                         rm -f .vault_pass.txt
                     '''
                 }
