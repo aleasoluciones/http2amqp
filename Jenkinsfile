@@ -48,7 +48,10 @@ pipeline {
         stage('Run Staging deploy') {
             steps {
                 echo "-=- run staging deploy -=-"
-                sh "script -e -c 'deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING}'"
+                sh '''
+                    
+                    script -e -c "deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING} -v /tmp/.env_key:/root/.env_key:ro"
+                '''
             }
         }
     }
