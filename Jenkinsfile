@@ -50,7 +50,7 @@ pipeline {
                 echo "-=- run staging deploy -=-"
                 sh '''
       
-                    script -e -c "deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING} --vault-password-file=/tmp/.env_key"
+                    script -e -c "deploy.sh -r ${REPO_NAME} -g ${GIT_REV} -t ${HOST_FELIX_STAGING}:${HOST_FELIXLITE_STAGING} "
                 '''
             }
         }
