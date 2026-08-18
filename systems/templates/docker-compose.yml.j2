@@ -17,6 +17,7 @@ services:
         tag: docker/{{ component }}__{{ component }}
     network_mode: host
     restart: always
+    stop_grace_period: 30s
     volumes:
       - type: bind
         source: {{ docker_compose_data }}/{{ component }}
