@@ -6,7 +6,7 @@ toolchain go1.21.13
 
 require (
 	github.com/aleasoluciones/goaleasoluciones v0.0.0-20220218070719-a99a7ffe0d1b
-	github.com/aleasoluciones/simpleamqp v0.0.0-20250514095844-ac74265ec2ec
+	github.com/aleasoluciones/simpleamqp v0.0.0-20260910084824-965443ae2a77
 	github.com/pborman/uuid v1.2.1
 	github.com/stretchr/testify v1.10.0
 )
