@@ -18,8 +18,7 @@ import (
 )
 
 const (
-	responsesQueue = "queries_responses"
-	responseTopic  = "queries.response"
+	responseTopic = "queries.response"
 )
 
 // NewService return the http2amqp service. This service publish a amqp message for each http request
@@ -35,7 +34,7 @@ func NewService(brokerURI, exchange string, timeout time.Duration) *Service {
 		exchange:       exchange,
 		queryTimeout:   timeout,
 		queryResponses: safemap.NewSafeMap(),
-		amqpResponses:  consumer.ReceiveWithoutTimeout(exchange, []string{responseTopic}, responsesQueue, simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true}),
+		amqpResponses:  consumer.ReceiveWithoutTimeout(exchange, []string{responseTopic}, "", simpleamqp.QueueOptions{Durable: false, Delete: true, Exclusive: true}),
 	}
 
 	go service.receiveResponses()
