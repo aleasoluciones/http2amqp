@@ -43,6 +43,26 @@ func TestHttpSuccessfullGetToEchoServer(t *testing.T) {
 	assert.Equal(t, response.StatusCode, 200)
 }
 
+func TestTwoServicesOnSameBrokerReceiveTheirResponses(t *testing.T) {
+	t.Parallel()
+
+	otherService := NewService(envBrokerURI(), "events", 1*time.Second)
+	ts := httptest.NewServer(http.HandlerFunc(NewHTTPServerFunc(service)))
+	defer ts.Close()
+	otherTs := httptest.NewServer(http.HandlerFunc(NewHTTPServerFunc(otherService)))
+	defer otherTs.Close()
+
+	// Sleep to allow the consumer.Receive to connect to rabbitmq
+	time.Sleep(5 * time.Second)
+	response, err := http.Get(ts.URL + "/test/ok")
+	otherResponse, otherErr := http.Get(otherTs.URL + "/test/ok")
+
+	assert.Equal(t, err, nil)
+	assert.Equal(t, response.StatusCode, 200)
+	assert.Equal(t, otherErr, nil)
+	assert.Equal(t, otherResponse.StatusCode, 200)
+}
+
 func TestHttpTimeoutGetToEchoServer(t *testing.T) {
 	t.Parallel()
 
